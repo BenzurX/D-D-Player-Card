@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Combat Sheet</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- WELCOME SCREEN -->
+<div id="welcome">
+  <div class="welcome-inner">
+    <i class="ti ti-shield-star welcome-icon"></i>
+    <h1 class="welcome-title">Combat Sheet</h1>
+    <p class="welcome-sub">Your D&amp;D quick-reference companion.<br>Create your first character to get started.</p>
+    <button class="welcome-btn" id="welcomeCreate"><i class="ti ti-plus"></i> Create Character</button>
+  </div>
+</div>
+
+<!-- NEW CHARACTER SHEET -->
+<div class="overlay" id="newCharOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title"><i class="ti ti-user-plus c-gold"></i> New Character</div>
+      <button class="sheet-close" id="newCharClose" aria-label="Close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="sheet-body" id="newCharBody"></div>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
+
+  <!-- HEADER -->
+  <div id="header">
+    <div class="avatar" id="avatarBtn" aria-label="Switch character">
+      <i class="ti ti-user"></i>
+    </div>
+    <div class="char-info">
+      <div class="char-name" id="charName"></div>
+      <div class="char-sub"  id="charSub"></div>
+    </div>
+    <div class="hdr-stats">
+      <div class="stat-pill" id="hpPill" aria-label="Edit stats">
+        <i class="ti ti-heart hp-i"></i>
+        <span id="hpVal"></span>
+      </div>
+      <div class="stat-pill" id="speedPill" aria-label="Edit stats">
+        <i class="ti ti-shoe speed-i"></i>
+        <span id="speedVal"></span>
+      </div>
+      <div class="stat-pill" id="acPill" aria-label="Edit stats">
+        <i class="ti ti-shield ac-i"></i>
+        <span id="acVal"></span>
+      </div>
+      <div class="stat-pill" id="profPill" aria-label="Edit stats">
+        <i class="ti ti-star prof-i"></i>
+        <span id="profVal"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div id="content">
+
+    <!-- ACT TAB -->
+    <div class="tab-panel active" id="tab-act">
+      <div class="section-hdr">Actions</div>
+      <div class="btn-grid">
+        <div class="act-btn" data-category="attack"    data-type="action"><i class="ti ti-sword           c-red    cat-i"></i><div class="btn-text"><span class="btn-name">Attack</span>    <span class="btn-desc">Weapon Attacks</span></div></div>
+        <div class="act-btn" data-category="magic"     data-type="action"><i class="ti ti-wand            c-purple cat-i"></i><div class="btn-text"><span class="btn-name">Magic</span>     <span class="btn-desc">Cast Spells</span></div></div>
+        <div class="act-btn" data-category="items"     data-type="action"><i class="ti ti-flask           c-green  cat-i"></i><div class="btn-text"><span class="btn-name">Items</span>     <span class="btn-desc">Healing Potion</span></div></div>
+        <div class="act-btn" data-category="features"  data-type="action"><i class="ti ti-sparkles        c-amber  cat-i"></i><div class="btn-text"><span class="btn-name">Features</span>  <span class="btn-desc">Action Surge</span></div></div>
+        <div class="act-btn" data-category="dash"      data-type="action"><i class="ti ti-shoe            c-blue   cat-i"></i><div class="btn-text"><span class="btn-name">Dash</span>      <span class="btn-desc">Double Movement</span></div></div>
+        <div class="act-btn" data-category="dodge"     data-type="action"><i class="ti ti-run             c-plum   cat-i"></i><div class="btn-text"><span class="btn-name">Dodge</span>     <span class="btn-desc">Attacks With Disadv.</span></div></div>
+        <div class="act-btn" data-category="disengage" data-type="action"><i class="ti ti-cloud           c-blue   cat-i"></i><div class="btn-text"><span class="btn-name">Disengage</span> <span class="btn-desc">No Opp. Attacks</span></div></div>
+        <div class="act-btn" data-category="hide"      data-type="action"><i class="ti ti-eye-off         c-slate  cat-i"></i><div class="btn-text"><span class="btn-name">Hide</span>      <span class="btn-desc">Stealth Check</span></div></div>
+        <div class="act-btn" data-category="help"      data-type="action"><i class="ti ti-heart-handshake c-sage   cat-i"></i><div class="btn-text"><span class="btn-name">Help</span>      <span class="btn-desc">Give Ally Advantage</span></div></div>
+        <div class="act-btn" data-category="ready"     data-type="action"><i class="ti ti-clock-pause     c-gold   cat-i"></i><div class="btn-text"><span class="btn-name">Ready</span>     <span class="btn-desc">Hold Action</span></div></div>
+      </div>
+
+      <div class="section-hdr section-gap">Bonus Actions</div>
+      <div class="btn-grid">
+        <div class="act-btn" data-category="attack"   data-type="bonus"><i class="ti ti-sword    c-red    cat-i"></i><div class="btn-text"><span class="btn-name">Attack</span>   <span class="btn-desc">Offhand Attack</span></div></div>
+        <div class="act-btn" data-category="magic"    data-type="bonus"><i class="ti ti-wand     c-purple cat-i"></i><div class="btn-text"><span class="btn-name">Magic</span>    <span class="btn-desc">Bonus Spells</span></div></div>
+        <div class="act-btn" data-category="items"    data-type="bonus"><i class="ti ti-flask    c-green  cat-i"></i><div class="btn-text"><span class="btn-name">Items</span>    <span class="btn-desc">Quick Use Item</span></div></div>
+        <div class="act-btn" data-category="features" data-type="bonus"><i class="ti ti-sparkles c-amber  cat-i"></i><div class="btn-text"><span class="btn-name">Features</span> <span class="btn-desc">Bonus Abilities</span></div></div>
+      </div>
+    </div>
+
+    <!-- REACTION TAB -->
+    <div class="tab-panel" id="tab-reaction">
+      <div class="section-hdr">Reactions</div>
+      <div id="reactionList"></div>
+      <button class="add-btn" data-tab="reaction"><i class="ti ti-plus"></i> Add Reaction</button>
+    </div>
+
+    <!-- DEFENSE TAB -->
+    <div class="tab-panel" id="tab-defense">
+      <div class="section-hdr">Defenses &amp; Resistances</div>
+      <div id="defenseList"></div>
+      <button class="add-btn" data-tab="defense"><i class="ti ti-plus"></i> Add Defense</button>
+    </div>
+
+    <!-- EXPLORE TAB -->
+    <div class="tab-panel" id="tab-explore">
+      <div class="section-hdr">Out of Combat</div>
+      <div id="exploreList"></div>
+      <button class="add-btn" data-tab="explore"><i class="ti ti-plus"></i> Add Ability</button>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav id="nav">
+    <button class="nav-tab active" data-tab="act">
+      <i class="ti ti-hand-finger"></i><div class="nl">Act</div>
+    </button>
+    <button class="nav-tab" data-tab="reaction">
+      <i class="ti ti-bolt"></i><div class="nl">Reaction</div>
+    </button>
+    <button class="nav-tab" data-tab="defense">
+      <i class="ti ti-shield-half"></i><div class="nl">Defense</div>
+    </button>
+    <button class="nav-tab" data-tab="explore">
+      <i class="ti ti-map"></i><div class="nl">Explore</div>
+    </button>
+  </nav>
+
+</div>
+
+<!-- ABILITY SHEET -->
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title" id="sheetTitle"></div>
+      <button class="sheet-close" id="sheetClose" aria-label="Close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="sheet-body" id="sheetBody"></div>
+  </div>
+</div>
+
+<!-- STAT EDIT SHEET -->
+<div class="overlay" id="statOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title"><i class="ti ti-user c-gold"></i> Character Stats</div>
+      <button class="sheet-close" id="statClose" aria-label="Close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="sheet-body" id="statBody"></div>
+  </div>
+</div>
+
+<!-- CHARACTER SWITCHER SHEET -->
+<div class="overlay" id="charOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title"><i class="ti ti-users c-gold"></i> Characters</div>
+      <button class="sheet-close" id="charClose" aria-label="Close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="sheet-body" id="charBody"></div>
+  </div>
+</div>
+
+<!-- Scripts: data first, then app logic -->
+<script src="data/characters.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
