@@ -6,6 +6,7 @@ A mobile-first D&D quick-reference companion designed for use at the table. No i
 
 ## Features
 
+- A companion app for quick access info for your D&D character. Each tab (Act, React, Defend, and Explore) let you focus on the most important things you want to remember and keep in front of you when playing.
 - **Multiple characters** — create and switch between characters on the fly
 - **Act tab** — quick-access buttons for Actions, Bonus Actions, and common Extra Actions (Dash, Dodge, Disengage, Hide, Help, Ready)
 - **React tab** — manage your Reactions with custom cards
