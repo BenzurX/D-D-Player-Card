@@ -14,20 +14,19 @@ function save() {
 function blankAbilities() {
   return {
     attack_action: [], magic_action: [], items_action: [], features_action: [],
-    attack_bonus:  [], magic_bonus: [], items_bonus: [], features_bonus: [],
-    reaction: [], defense: [], explore: []
+    attack_bonus:  [], magic_bonus:  [], items_bonus:  [], features_bonus:  [],
+    reaction: [],
   };
 }
 
 // ── CATEGORY CONFIG ───────────────────────────────────────────
+// Used by openCategorySheet, openAddSheet, and openEditSheet
 const CATEGORIES = {
   attack:   { icon: 'ti-sword',    color: 'c-red',    label: 'Attack' },
   magic:    { icon: 'ti-wand',     color: 'c-purple', label: 'Magic' },
-  items:    { icon: 'ti-flask',    color: 'c-green',  label: 'Items' },
+  items:    { icon: 'ti-flask-2',  color: 'c-green',  label: 'Items' },
   features: { icon: 'ti-sparkles', color: 'c-amber',  label: 'Features' },
   reaction: { icon: 'ti-bolt',     color: 'c-purple', label: 'Reaction' },
-  defense:  { icon: 'ti-shield-half', color: 'c-blue', label: 'Defense' },
-  explore:  { icon: 'ti-map',      color: 'c-green',  label: 'Explore' },
 };
 
 // ── EXTRA ACTIONS ─────────────────────────────────────────────
@@ -83,6 +82,23 @@ function modStr(score) {
   return (m >= 0 ? '+' : '') + m;
 }
 
+// Returns the total skill bonus for a character, accounting for overrides,
+// proficiency, and expertise. Used by the skill grid and passive score cards.
+function calcSkillBonus(c, skillKey) {
+  if (!c) return 0;
+  const skill = SKILLS.find(s => s.key === skillKey);
+  if (!skill) return 0;
+  const over = (c.skillOverrides || {})[skillKey];
+  // Explicit null check because 0 is a valid override value
+  if (over !== null && over !== undefined) return over;
+  const state   = (c.skills || {})[skillKey] || 'none';
+  const mod     = getAbilityMod(c[skill.ability] || 10);
+  const profNum = parseInt(c.prof || '+2') || 2;
+  if (state === 'expert') return mod + profNum * 2;
+  if (state === 'prof')   return mod + profNum;
+  return mod;
+}
+
 // ── SKILLS ───────────────────────────────────────────────────
 const SKILLS = [
   { name: 'Acrobatics',      key: 'acrobatics',    ability: 'dex' },
@@ -117,6 +133,12 @@ function blankSavingThrows() {
   return st;
 }
 
+// Shared lookup used by renderDefenseTab and openSaveOverrideSheet
+const ABILITY_NAMES = {
+  str: 'Strength', dex: 'Dexterity', con: 'Constitution',
+  int: 'Intelligence', wis: 'Wisdom', cha: 'Charisma',
+};
+
 function getSaveBonus(c, ability) {
   if (!c) return 0;
   const st      = (c.savingThrows || {})[ability] || { prof: false, override: null };
@@ -142,6 +164,7 @@ document.getElementById('welcomeCreate').addEventListener('click', () => {
 });
 
 // ── NEW CHARACTER FORM ────────────────────────────────────────
+// fromWelcome: true when called from the splash screen — hides welcome on success
 function openNewCharSheet(fromWelcome) {
   document.getElementById('newCharBody').innerHTML = `
     <div class="edit-form">
@@ -387,20 +410,8 @@ function renderExploreTab() {
   const tab = document.getElementById('tab-explore');
   const c   = currentChar();
 
-  const skillData     = (c && c.skills)         || {};
-  const skillOverrides = (c && c.skillOverrides) || {};
-
-  function calcBonus(skill) {
-    const over = skillOverrides[skill.key];
-    if (over !== null && over !== undefined) return over;
-    const state   = skillData[skill.key] || 'none';
-    const score   = c ? (c[skill.ability] || 10) : 10;
-    const mod     = getAbilityMod(score);
-    const profNum = parseInt(c ? (c.prof || '+2') : '+2') || 2;
-    if (state === 'expert') return mod + profNum * 2;
-    if (state === 'prof')   return mod + profNum;
-    return mod;
-  }
+  const skillData      = (c && c.skills)         || {};
+  const skillOverrides = (c && c.skillOverrides)  || {};
 
   function profIcon(state) {
     if (state === 'expert') return 'ti-star-filled';
@@ -408,10 +419,27 @@ function renderExploreTab() {
     return 'ti-circle';
   }
 
+  // ── Character info cards ──────────────────────────────────
+  const sizeLabel = c ? (c.size ? c.size.charAt(0).toUpperCase() + c.size.slice(1) : 'Medium') : '—';
+
+  const dvVal = c && c.darkvision != null ? `${c.darkvision} ft.` : 'None';
+
+  const speedVal = (c && c.speed) || '30 ft.';
+  const speedSubs = [];
+  if (c && c.flySpeed)   speedSubs.push(`<span class="explore-card-sub"><i class="ti ti-feather"></i> Fly ${c.flySpeed}</span>`);
+  if (c && c.climbSpeed) speedSubs.push(`<span class="explore-card-sub"><i class="ti ti-mountain"></i> Climb ${c.climbSpeed}</span>`);
+  if (c && c.swimSpeed)  speedSubs.push(`<span class="explore-card-sub"><i class="ti ti-ripple"></i> Swim ${c.swimSpeed}</span>`);
+
+  // ── Passive scores ────────────────────────────────────────
+  const passPerc  = 10 + calcSkillBonus(c, 'perception');
+  const passInv   = 10 + calcSkillBonus(c, 'investigation');
+  const passIns   = 10 + calcSkillBonus(c, 'insight');
+
+  // ── Skills ───────────────────────────────────────────────
   const skillsHTML = SKILLS.map(skill => {
     const state    = skillData[skill.key] || 'none';
     const hasOver  = skillOverrides[skill.key] !== null && skillOverrides[skill.key] !== undefined;
-    const bonus    = calcBonus(skill);
+    const bonus    = calcSkillBonus(c, skill.key);
     const bonusStr = (bonus >= 0 ? '+' : '') + bonus;
     return `
       <div class="skill-row" data-skill="${skill.key}">
@@ -427,9 +455,45 @@ function renderExploreTab() {
   }).join('');
 
   tab.innerHTML = `
+    <div class="section-hdr">Character</div>
+    <div class="passive-row">
+      <div class="passive-card tappable" id="explore-size-card">
+        <div class="passive-top"><i class="ti ti-ruler-2 c-amber passive-icon"></i><div class="passive-val">${sizeLabel}</div></div>
+        <div class="passive-label">Size</div>
+      </div>
+      <div class="passive-card tappable" id="explore-dv-card">
+        <div class="passive-top"><i class="ti ti-eye c-blue passive-icon"></i><div class="passive-val">${dvVal}</div></div>
+        <div class="passive-label">Darkvision</div>
+      </div>
+      <div class="passive-card tappable" id="explore-speed-card">
+        <div class="passive-top"><i class="ti ti-shoe c-blue passive-icon"></i><div class="passive-val">${speedVal}</div></div>
+        <div class="passive-label">Movement</div>
+      </div>
+    </div>
+
+    <div class="section-hdr">Passive Scores</div>
+    <div class="passive-row">
+      <div class="passive-card">
+        <div class="passive-top"><i class="ti ti-eye c-blue passive-icon"></i><div class="passive-val">${passPerc}</div></div>
+        <div class="passive-label">Perception</div>
+      </div>
+      <div class="passive-card">
+        <div class="passive-top"><i class="ti ti-zoom-question c-green passive-icon"></i><div class="passive-val">${passInv}</div></div>
+        <div class="passive-label">Investigation</div>
+      </div>
+      <div class="passive-card">
+        <div class="passive-top"><i class="ti ti-bulb c-amber passive-icon"></i><div class="passive-val">${passIns}</div></div>
+        <div class="passive-label">Insight</div>
+      </div>
+    </div>
+
     <div class="section-hdr">Skills</div>
     <div class="skill-grid">${skillsHTML}</div>
     <div style="font-family:'Cinzel',serif;font-size:var(--text-2xs);color:var(--ink-faint);letter-spacing:0.5px;text-align:center;margin-top:10px;">Tap the circles to mark Proficiency or Expertise</div>`;
+
+  document.getElementById('explore-size-card').addEventListener('click', () => openStatSheet());
+  document.getElementById('explore-dv-card').addEventListener('click', () => openDarkvisionSheet());
+  document.getElementById('explore-speed-card').addEventListener('click', () => openMovespeedSheet());
 
   tab.querySelectorAll('.prof-toggle').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -458,10 +522,6 @@ function renderDefenseTab() {
   const c   = currentChar();
 
   const saves = (c && c.savingThrows) || {};
-  const ABILITY_NAMES = {
-    str: 'Strength', dex: 'Dexterity', con: 'Constitution',
-    int: 'Intelligence', wis: 'Wisdom', cha: 'Charisma'
-  };
 
   const saveRows = ['str','dex','con','int','wis','cha'].map(ab => {
     const st      = saves[ab] || { prof: false, override: null };
@@ -615,11 +675,7 @@ function openExtraActionSheet(key) {
 
 // ── OPEN SAVE OVERRIDE SHEET ──────────────────────────────────
 function openSaveOverrideSheet(ability) {
-  const ABILITY_NAMES = {
-    str: 'Strength', dex: 'Dexterity', con: 'Constitution',
-    int: 'Intelligence', wis: 'Wisdom', cha: 'Charisma'
-  };
-  const c       = currentChar();
+  const c = currentChar();
   const st      = (c && c.savingThrows && c.savingThrows[ability]) || { prof: false, override: null };
   const hasOver = st.override !== null && st.override !== undefined;
   const mod     = getAbilityMod((c && c[ability]) || 10);
@@ -671,6 +727,76 @@ function openSaveOverrideSheet(ability) {
     renderDefenseTab();
   });
 
+  openOverlay('overlay');
+}
+
+// ── OPEN DARKVISION SHEET ────────────────────────────────────
+function openDarkvisionSheet() {
+  const c = currentChar();
+  if (!c) return;
+  const current = c.darkvision != null ? c.darkvision : '';
+  document.getElementById('sheetTitle').innerHTML = `<i class="ti ti-eye c-blue"></i> Darkvision`;
+  document.getElementById('sheetBody').innerHTML = `
+    <div class="edit-form">
+      <div class="form-row">
+        <label class="form-label">Range (feet)</label>
+        <input class="form-input" id="dv-input" type="number" min="0" value="${current}" placeholder="e.g. 60">
+        <div style="font-family:'Cinzel',serif;font-size:var(--text-2xs);color:var(--ink-faint);letter-spacing:0.5px;margin-top:2px;">Leave blank for no darkvision</div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" id="dv-cancel">Cancel</button>
+        <button class="btn-save" id="dv-save">Save</button>
+      </div>
+    </div>`;
+  document.getElementById('dv-cancel').addEventListener('click', () => closeOverlay('overlay'));
+  document.getElementById('dv-save').addEventListener('click', () => {
+    const raw = document.getElementById('dv-input').value.trim();
+    c.darkvision = raw === '' ? null : parseInt(raw);
+    save();
+    closeOverlay('overlay');
+    renderExploreTab();
+  });
+  openOverlay('overlay');
+}
+
+// ── OPEN MOVESPEED SHEET ──────────────────────────────────────
+function openMovespeedSheet() {
+  const c = currentChar();
+  if (!c) return;
+  document.getElementById('sheetTitle').innerHTML = `<i class="ti ti-shoe c-blue"></i> Movement`;
+  document.getElementById('sheetBody').innerHTML = `
+    <div class="edit-form">
+      <div class="form-row">
+        <label class="form-label">Walk Speed</label>
+        <input class="form-input" id="spd-walk" value="${c.speed || '30 ft.'}" placeholder="e.g. 30 ft.">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Fly Speed</label>
+        <input class="form-input" id="spd-fly" value="${c.flySpeed || ''}" placeholder="e.g. 60 ft. (leave blank if none)">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Climb Speed</label>
+        <input class="form-input" id="spd-climb" value="${c.climbSpeed || ''}" placeholder="e.g. 30 ft. (leave blank if none)">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Swim Speed</label>
+        <input class="form-input" id="spd-swim" value="${c.swimSpeed || ''}" placeholder="e.g. 30 ft. (leave blank if none)">
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" id="spd-cancel">Cancel</button>
+        <button class="btn-save" id="spd-save">Save</button>
+      </div>
+    </div>`;
+  document.getElementById('spd-cancel').addEventListener('click', () => closeOverlay('overlay'));
+  document.getElementById('spd-save').addEventListener('click', () => {
+    c.speed      = document.getElementById('spd-walk').value.trim()  || c.speed;
+    c.flySpeed   = document.getElementById('spd-fly').value.trim()   || null;
+    c.climbSpeed = document.getElementById('spd-climb').value.trim() || null;
+    c.swimSpeed  = document.getElementById('spd-swim').value.trim()  || null;
+    save();
+    closeOverlay('overlay');
+    renderExploreTab();
+  });
   openOverlay('overlay');
 }
 
@@ -942,6 +1068,7 @@ function attachFormListeners(ability, key) {
 function openOverlay(id)  { document.getElementById(id).classList.add('open'); }
 function closeOverlay(id) { document.getElementById(id).classList.remove('open'); }
 
+// Tap the dark backdrop (outside the sheet) to dismiss
 document.querySelectorAll('.overlay').forEach(overlay => {
   overlay.addEventListener('click', e => {
     if (e.target === overlay) closeOverlay(overlay.id);
@@ -993,6 +1120,14 @@ function openStatSheet() {
         <div class="form-row">
           <label class="form-label"><i class="ti ti-star"></i> Prof. Bonus</label>
           <input class="stat-edit-input" id="s-prof" value="${c.prof || '+2'}">
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label"><i class="ti ti-ruler-2"></i> Size</label>
+        <div class="prof-seg" id="size-seg">
+          <button class="prof-seg-btn${(c.size||'medium')==='small'  ? ' active' : ''}" data-state="small">Small</button>
+          <button class="prof-seg-btn${(c.size||'medium')==='medium' ? ' active' : ''}" data-state="medium">Medium</button>
+          <button class="prof-seg-btn${(c.size||'medium')==='large'  ? ' active' : ''}" data-state="large">Large</button>
         </div>
       </div>
       <div class="section-lbl">Ability Scores</div>
@@ -1057,9 +1192,18 @@ function openStatSheet() {
     c.int   = parseInt(document.getElementById('s-int').value) || c.int || 10;
     c.wis   = parseInt(document.getElementById('s-wis').value) || c.wis || 10;
     c.cha   = parseInt(document.getElementById('s-cha').value) || c.cha || 10;
+    c.size  = document.querySelector('#size-seg .prof-seg-btn.active')?.dataset.state || c.size || 'medium';
     save();
     renderHeader();
+    renderAllSimpleTabs();
     closeOverlay('statOverlay');
+  });
+
+  document.getElementById('size-seg').addEventListener('click', e => {
+    const btn = e.target.closest('.prof-seg-btn');
+    if (!btn) return;
+    document.querySelectorAll('#size-seg .prof-seg-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
   });
 
   ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(ab => {

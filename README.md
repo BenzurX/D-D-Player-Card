@@ -11,7 +11,7 @@ A mobile-first D&D quick-reference companion designed for use at the table. No i
 - **Act tab** — quick-access buttons for Actions, Bonus Actions, and common Extra Actions (Dash, Dodge, Disengage, Hide, Help, Ready)
 - **React tab** — manage your Reactions with custom cards
 - **Defend tab** — AC display, resistances/immunities, and Saving Throw bonuses
-- **Explore tab** — full Skills list with auto-calculated bonuses
+- **Explore tab** — character traits, passive scores, and a full Skills list with auto-calculated bonuses
 - **Persistent storage** — everything saves automatically to your browser's localStorage; no account or server needed
 
 ---
@@ -39,12 +39,21 @@ Lists your Reaction abilities. Tap **+ Add Reaction** to create one. Tap any car
 
 ### Defend
 - **AC card** — displays your Armor Class at a glance
-- **Resistances / Immunities** — damage types you resist or are immune to; tap **+** to add
-- **Saving Throws** — auto-calculated from your ability scores and proficiency bonus; tap any row to set proficiency or enter a manual override
+- **Saving Throws** — auto-calculated from your ability scores and proficiency bonus; tap any row to set proficiency or enter a manual override; tap the circle to quickly toggle proficiency
+- **Resistances / Immunities** — damage types you resist or are immune to; tap **+** to add, tap **✕** on a chip to remove
 
 ### Explore
-All 18 skills displayed in a 2-column grid with auto-calculated bonuses.
+The Explore tab is organized into three sections:
 
+**Character** — key traits at a glance:
+- **Size** — tap to open Character Stats and change your size (Small / Medium / Large)
+- **Darkvision** — tap to set range in feet; displays "None" if not set
+- **Movement** — tap to set walk, fly, climb, and swim speeds
+
+**Passive Scores** — auto-calculated from your ability scores and skill proficiencies:
+- Passive Perception, Passive Investigation, Passive Insight (each = 10 + skill bonus)
+
+**Skills** — all 18 skills in a 2-column grid with auto-calculated bonuses:
 - **Circle icon** (left of each card) — tap to cycle through None → Proficient → Expertise
 - **Tap the card** to open a popover where you can set proficiency and enter a manual override bonus
 - Proficient bonuses display in amber; manual overrides display in blue with an asterisk (`*`)
@@ -53,12 +62,16 @@ All 18 skills displayed in a 2-column grid with auto-calculated bonuses.
 
 ## Editing a Character
 
-Tap your character name or subheading in the top header to open the stat editor. From there you can update:
+Tap your character name or avatar in the top header to open the Hero Summary. From there you can:
+- Upload a portrait photo
+- See your ability scores, HP, AC, Speed, and Prof bonus at a glance
+- Tap **Edit Stats** to open the Character Stats editor
 
-- Name, class, race, level
-- Ability scores (STR, DEX, CON, INT, WIS, CHA)
-- Armor Class (AC)
-- Proficiency bonus
+The stats editor lets you update:
+- Name, class, level
+- Ability scores (STR, DEX, CON, INT, WIS, CHA) — modifier updates live as you type
+- Armor Class (AC), Max HP, Speed, Proficiency bonus
+- Size (Small / Medium / Large)
 
 ---
 
