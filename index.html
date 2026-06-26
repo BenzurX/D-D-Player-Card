@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Combat Sheet</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+  <link rel="manifest" href="favicon/site.webmanifest">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,10 +22,18 @@
 </head>
 <body>
 
+<!-- LOADING SCREEN -->
+<div id="loading">
+  <div class="loading-inner">
+    <img src="images/d20-icon.svg" class="loading-icon" alt="">
+    <p class="loading-text">Loading...</p>
+  </div>
+</div>
+
 <!-- WELCOME SCREEN -->
 <div id="welcome">
   <div class="welcome-inner">
-    <i class="ti ti-dice-6-filled welcome-icon"></i>
+    <img src="images/d20-icon.svg" class="welcome-icon" alt="">
     <h1 class="welcome-title">Combat Sheet</h1>
     <p class="welcome-sub">Your D&amp;D quick-reference companion.<br>Create your first character to get started.</p>
     <button class="welcome-btn" id="welcomeCreate"><i class="ti ti-plus"></i> Create Character</button>
@@ -57,33 +69,7 @@
   <div id="content">
 
     <!-- ACT TAB -->
-    <div class="tab-panel active" id="tab-act">
-      <div class="section-hdr">Actions</div>
-      <div class="btn-grid">
-        <div class="act-btn" data-category="attack"   data-type="action"><i class="ti ti-sword    c-red    cat-i"></i><div class="btn-text"><span class="btn-name">Attack</span>   <span class="btn-desc">Weapon Attacks</span></div></div>
-        <div class="act-btn" data-category="magic"    data-type="action"><i class="ti ti-wand     c-purple cat-i"></i><div class="btn-text"><span class="btn-name">Magic</span>    <span class="btn-desc">Cast Spells</span></div></div>
-        <div class="act-btn" data-category="items"    data-type="action"><i class="ti ti-flask-2    c-green  cat-i"></i><div class="btn-text"><span class="btn-name">Items</span>    <span class="btn-desc">Healing Potion</span></div></div>
-        <div class="act-btn" data-category="features" data-type="action"><i class="ti ti-sparkles c-amber  cat-i"></i><div class="btn-text"><span class="btn-name">Features</span> <span class="btn-desc">Action Surge</span></div></div>
-      </div>
-
-      <div class="section-hdr section-gap">Bonus Actions</div>
-      <div class="btn-grid">
-        <div class="act-btn" data-category="attack"   data-type="bonus"><i class="ti ti-sword    c-red    cat-i"></i><div class="btn-text"><span class="btn-name">Attack</span>   <span class="btn-desc">Offhand Attack</span></div></div>
-        <div class="act-btn" data-category="magic"    data-type="bonus"><i class="ti ti-wand     c-purple cat-i"></i><div class="btn-text"><span class="btn-name">Magic</span>    <span class="btn-desc">Bonus Spells</span></div></div>
-        <div class="act-btn" data-category="items"    data-type="bonus"><i class="ti ti-flask-2    c-green  cat-i"></i><div class="btn-text"><span class="btn-name">Items</span>    <span class="btn-desc">Quick Use Item</span></div></div>
-        <div class="act-btn" data-category="features" data-type="bonus"><i class="ti ti-sparkles c-amber  cat-i"></i><div class="btn-text"><span class="btn-name">Features</span> <span class="btn-desc">Bonus Abilities</span></div></div>
-      </div>
-
-      <div class="section-hdr section-gap">Extra Actions</div>
-      <div class="btn-grid">
-        <div class="act-btn extra-act" data-extra="dash">      <i class="ti ti-shoe            c-blue  cat-i"></i><div class="btn-text"><span class="btn-name">Dash</span>      <span class="btn-desc">Double Movement</span></div></div>
-        <div class="act-btn extra-act" data-extra="dodge">     <i class="ti ti-run             c-plum  cat-i"></i><div class="btn-text"><span class="btn-name">Dodge</span>     <span class="btn-desc">Attacks With Disadv.</span></div></div>
-        <div class="act-btn extra-act" data-extra="disengage"> <i class="ti ti-cloud           c-blue  cat-i"></i><div class="btn-text"><span class="btn-name">Disengage</span> <span class="btn-desc">No Opp. Attacks</span></div></div>
-        <div class="act-btn extra-act" data-extra="hide">      <i class="ti ti-eye-off         c-slate cat-i"></i><div class="btn-text"><span class="btn-name">Hide</span>      <span class="btn-desc">Stealth Check</span></div></div>
-        <div class="act-btn extra-act" data-extra="help">      <i class="ti ti-heart-handshake c-sage  cat-i"></i><div class="btn-text"><span class="btn-name">Help</span>      <span class="btn-desc">Give Ally Advantage</span></div></div>
-        <div class="act-btn extra-act" data-extra="ready">     <i class="ti ti-clock-pause     c-orange cat-i"></i><div class="btn-text"><span class="btn-name">Ready</span>     <span class="btn-desc">Hold Action</span></div></div>
-      </div>
-    </div>
+    <div class="tab-panel active" id="tab-act"></div>
 
     <!-- REACTION TAB -->
     <div class="tab-panel" id="tab-reaction">
@@ -124,7 +110,10 @@
     <div class="sheet-handle"></div>
     <div class="sheet-header">
       <div class="sheet-title" id="sheetTitle"></div>
-      <button class="sheet-close" id="sheetClose" aria-label="Close"><i class="ti ti-x"></i></button>
+      <div class="sheet-header-actions">
+        <button class="sheet-pin" id="sheetPin" aria-label="Pin to top" style="display:none;"><i class="ti ti-pin"></i></button>
+        <button class="sheet-close" id="sheetClose" aria-label="Close"><i class="ti ti-x"></i></button>
+      </div>
     </div>
     <div class="sheet-body" id="sheetBody"></div>
   </div>

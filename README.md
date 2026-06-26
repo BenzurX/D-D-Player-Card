@@ -30,7 +30,9 @@ To switch characters or create another, tap the avatar icon in the top-left corn
 ## Tabs
 
 ### Act
-Tap any category button (Attack, Magic, Items, Features) to view your saved abilities for that action type. Tap a card to read the full description. Tap **+ Add** to create a new ability card.
+**Pinned Actions** appear at the top for your most-used combat moves — pin any ability from its detail sheet to surface it here instantly during your turn.
+
+Tap any category button (Attack, Magic, Items, Features) to view your saved abilities for that action type. Tap a card to read the full description. Tap **+ Add** to create a new ability card. Features are categorized as **Feat**, **Origin**, or **Species** and display a type icon in the pinned list.
 
 The **Extra Actions** section at the bottom has built-in rule reminders for common actions — tap any to read the full rules text.
 
@@ -46,7 +48,7 @@ Lists your Reaction abilities. Tap **+ Add Reaction** to create one. Tap any car
 The Explore tab is organized into three sections:
 
 **Character** — key traits at a glance:
-- **Size** — tap to open Character Stats and change your size (Small / Medium / Large)
+- **Size** — tap to open Character Stats and change your size (Sm / Med / Lg)
 - **Darkvision** — tap to set range in feet; displays "None" if not set
 - **Movement** — tap to set walk, fly, climb, and swim speeds
 
@@ -71,7 +73,7 @@ The stats editor lets you update:
 - Name, class, level
 - Ability scores (STR, DEX, CON, INT, WIS, CHA) — modifier updates live as you type
 - Armor Class (AC), Max HP, Speed, Proficiency bonus
-- Size (Small / Medium / Large)
+- Size (Small / Medium / Large) — displayed as Sm / Med / Lg on the Explore tab
 
 ---
 
