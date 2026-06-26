@@ -43,7 +43,7 @@ Lists your Reaction abilities. Tap **+ Add Reaction** to create one. Tap any car
 
 ### Defend
 - **Defense summary** — AC at a glance, plus Resistances, Immunities, and Vulnerabilities always visible at the top; tap any existing tag to edit or delete it; tap **+ Add** inline to add a new entry
-- **Saving Throws** — auto-calculated from your ability scores and proficiency bonus; tap any row to set proficiency or enter a manual override; tap the circle to quickly toggle proficiency
+- **Saving Throws** — auto-calculated from your ability scores and proficiency bonus; displayed as a single-column list on mobile; tap any row to set proficiency or enter a manual override; tap the circle to quickly toggle proficiency
 
 ### Explore
 The Explore tab is organized into four sections (the Spellcasting section appears only if a Spellcasting Ability is set):
