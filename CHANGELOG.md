@@ -4,6 +4,13 @@ All notable changes to Combat Sheet are documented here.
 
 ---
 
+## [1.7] — 2026-06-26
+
+### Fixed
+- **Edit sheet scroll position** — opening an ability edit/detail sheet now always resets to the top; previously the sheet could open scrolled to the bottom when the prior content was longer
+
+---
+
 ## [1.6] — 2026-06-26
 
 ### Changed

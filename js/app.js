@@ -2592,7 +2592,11 @@ function attachFormListeners(ability, key) {
 }
 
 // ── OVERLAY HELPERS ───────────────────────────────────────────
-function openOverlay(id)  { document.getElementById(id).classList.add('open'); }
+function openOverlay(id)  {
+  document.getElementById(id).classList.add('open');
+  const body = document.getElementById('sheetBody');
+  if (body) body.scrollTop = 0;
+}
 function closeOverlay(id) { document.getElementById(id).classList.remove('open'); }
 
 // Tap the dark backdrop (outside the sheet) to dismiss
