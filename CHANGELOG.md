@@ -4,6 +4,14 @@ All notable changes to Combat Sheet are documented here.
 
 ---
 
+## [1.4] — 2026-06-26
+
+### Added
+- **Category-colored end caps** — Attack caps are deep crimson; Magic caps are dark indigo. Text color adapts to each dark background (light rose for attack, light lavender for magic)
+- **Parchment texture** — randomized SVG fractalNoise grain applied to the content background on every page load; grunge frequency gives subtle paper variation without overwhelming the palette
+
+---
+
 ## [1.3] — 2026-06-26
 
 ### Changed

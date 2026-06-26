@@ -135,7 +135,10 @@ html, body {
 #content {
   flex: 1;
   overflow-y: auto;
-  background: var(--parchment);
+  background-color: var(--parchment);
+  background-image: var(--parchment-texture, none);
+  background-size: 256px 256px;
+  background-blend-mode: multiply;
   -webkit-overflow-scrolling: touch;
 }
 #content::-webkit-scrollbar { width: 8px; }
@@ -1288,7 +1291,6 @@ html, body {
   margin-bottom: -5px;
   position: relative;
   z-index: 1;
-  background: var(--parchment-drk);
   clip-path: path('M 38 60 L 0 0 L 88 0 A 8 8 0 0 1 96 8 L 96 52 A 8 8 0 0 1 88 60 Z');
   display: flex;
   flex-direction: column;
@@ -1352,6 +1354,17 @@ html, body {
 .pinned-row:hover .pinned-icon { display: none; }
 .pinned-row.dragging { opacity: 0.35; }
 .pinned-row.drag-over { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+/* ── CAP CATEGORY COLORS ─────────────────────────────────────── */
+.cap-cat-attack { background: #3D1010; }
+.cap-cat-attack .pinned-cap-num,
+.cap-cat-attack .pinned-cap-sep { color: #F5D0D0; }
+.cap-cat-attack .pinned-cap-lbl { color: #D49090; }
+
+.cap-cat-magic  { background: #1A1430; }
+.cap-cat-magic  .pinned-cap-num,
+.cap-cat-magic  .pinned-cap-sep { color: #D0C8F0; }
+.cap-cat-magic  .pinned-cap-lbl { color: #9088C8; }
 
 .pinned-name-group {
   display: flex;

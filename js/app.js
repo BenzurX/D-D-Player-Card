@@ -1171,7 +1171,7 @@ function renderActTab() {
     const combinedSubtype = [actionLabelAM, subtype, spellLvlShort || masteryLabel].filter(Boolean).join(' · ');
 
     const capHTML = !hasEndCap ? '' : isDual
-      ? `<div class="pinned-row-cap pinned-row-cap-dual">
+      ? `<div class="pinned-row-cap pinned-row-cap-dual cap-cat-${cat}">
           <div class="pinned-cap-col">
             <span class="pinned-cap-num">${esc(capNum)}</span>
             ${capLbl ? `<span class="pinned-cap-lbl">${esc(capLbl)}</span>` : ''}
@@ -1182,7 +1182,7 @@ function renderActTab() {
             ${capLbl2 ? `<span class="pinned-cap-lbl">${esc(capLbl2)}</span>` : ''}
           </div>
         </div>`
-      : `<div class="pinned-row-cap">
+      : `<div class="pinned-row-cap cap-cat-${cat}">
           <span class="pinned-cap-num">${esc(capNum)}</span>
           ${capLbl ? `<span class="pinned-cap-lbl">${esc(capLbl)}</span>` : ''}
         </div>`;
@@ -2887,6 +2887,22 @@ function renderCharSwitcher() {
 document.getElementById('heroClose').addEventListener('click', () => closeOverlay('heroOverlay'));
 document.getElementById('charClose').addEventListener('click', () => closeOverlay('charOverlay'));
 document.getElementById('header').addEventListener('click', openHeroSummary);
+
+// ── PARCHMENT TEXTURE ────────────────────────────────────────
+(function () {
+  const seed = Math.floor(Math.random() * 9999);
+  const svg  = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256">
+    <filter id="n">
+      <feTurbulence type="fractalNoise" baseFrequency="0.22" numOctaves="2" seed="${seed}" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+    </filter>
+    <rect width="256" height="256" filter="url(#n)" opacity="0.20"/>
+  </svg>`;
+  document.documentElement.style.setProperty(
+    '--parchment-texture',
+    `url("data:image/svg+xml,${encodeURIComponent(svg)}")`
+  );
+})();
 
 // ── INIT ──────────────────────────────────────────────────────
 if (characters.length === 0) {
