@@ -4,6 +4,56 @@ All notable changes to Combat Sheet are documented here.
 
 ---
 
+## [1.3] — 2026-06-26
+
+### Changed
+- **Spellcasting Ability** — "None" label replaces "—" in the segmented control for clarity
+- **Defense summary labels** — Resistances/Immunities/Vulnerabilities section headers now 16px (up from 11px); icons 20px for prominence
+- **Resist pill color** — shifted from teal-green to leaf-green (`#3A7A20`) so it reads clearly as green
+- **Immunities + Add button** — now uses amber (`--amber`) color for better readability against the parchment background
+
+### Fixed
+- **Adv/Disadv badge tooltips** — the A/D hex badges in Skills (Explore tab) and Saving Throws (Defend tab) now show "Advantage" / "Disadvantage" tooltip on hover
+
+### Removed
+- **Duplicate defense sections** — the Resistances, Immunities, and Vulnerabilities sections that appeared below Saving Throws have been removed; manage these from the summary box at the top of the Defend tab
+
+---
+
+## [1.2] — 2026-06-26
+
+### Changed
+- **Character Stats auto-save on blur** — every text/number input in the Character Stats editor now auto-saves when you click away, without needing to press Save. The Save button still works and also closes the overlay; Cancel closes without committing unsaved segmented-control changes.
+
+### Reverted
+- **Hero Card inline editing** — HP, AC, Speed, and Proficiency pills are back to read-only display. Edit these via Character Stats instead (which now auto-saves).
+
+---
+
+## [1.1] — 2026-06-26
+
+### Changed
+- **Defense summary box** — Resistances, Immunities, and Vulnerabilities sections now always visible (no longer hidden when empty); labels show full terms; icons added to each label; inline **+ Add** pill button at end of each tag row
+- **Tag colors** — Resistances are now green, Immunities are gold, Vulnerabilities are red (was: blue, orange, red)
+
+---
+
+## [1.0] — 2026-06-26
+
+### Added
+- **Vulnerabilities section** — new section in the Defend tab (alongside Resistances and Immunities) with red `shield-down` icon; supports add/edit/delete the same way as the others
+- **Hero card inline editing** — HP, AC, Speed, and Proficiency bonus on the Hero Summary are now editable inputs; clicking out auto-saves without opening Character Stats
+- **Spell Slots auto-hide** — Spell Slots configuration section in Character Stats hides automatically when Spellcasting Ability is set to "—"
+
+### Changed
+- **Resistances icon** → `shield-up` (green); **Immunities icon** → `shield-cancel` (gold); icons appear in section headers and Add/Edit sheet titles
+- **"Prof" → "Proficiency"** — hero card pill label now fully spelled out
+- **Description field doubled in height** — textarea min-height increased from 96 px to 192 px for better visibility
+- **Items: Type field removed** — item cards no longer show a separate Type dropdown; Action Type (Action/Bonus Action) is the single source of truth for the badge
+- **Tooltip flicker fix** — tooltips no longer disappear briefly when hovering over child elements (icons inside tags); hide delay increased to 150 ms
+
+---
+
 ## [0.9] — 2026-06-26
 
 ### Added

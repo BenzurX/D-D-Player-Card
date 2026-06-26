@@ -40,9 +40,8 @@ The **Extra Actions** section at the bottom has built-in rule reminders for comm
 Lists your Reaction abilities. Tap **+ Add Reaction** to create one. Tap any card to read or edit it.
 
 ### Defend
-- **AC card** — displays your Armor Class at a glance
+- **Defense summary** — AC at a glance, plus Resistances, Immunities, and Vulnerabilities always visible at the top; tap any existing tag to edit or delete it; tap **+ Add** inline to add a new entry
 - **Saving Throws** — auto-calculated from your ability scores and proficiency bonus; tap any row to set proficiency or enter a manual override; tap the circle to quickly toggle proficiency
-- **Resistances / Immunities** — damage types you resist or are immune to; tap **+** to add, tap **✕** on a chip to remove
 
 ### Explore
 The Explore tab is organized into three sections:
@@ -74,6 +73,9 @@ The stats editor lets you update:
 - Ability scores (STR, DEX, CON, INT, WIS, CHA) — modifier updates live as you type
 - Armor Class (AC), Max HP, Speed, Proficiency bonus
 - Size (Small / Medium / Large) — displayed as Sm / Med / Lg on the Explore tab
+- Spellcasting Ability and Spell Slots (hidden when set to None)
+
+All text and number fields **auto-save when you click away** — no need to press Save for every change. The Save button still works and also closes the overlay.
 
 ---
 
@@ -83,10 +85,19 @@ All data is stored in `localStorage` under the keys `dnd_characters` and `dnd_cu
 
 ---
 
+## Rules Reference
+
+This app is built around the **D&D 2024 rules (5.5e)**. Ability cards, spell data, weapons, items, and feats are drawn from the [Open5e API](https://open5e.com), which publishes the 2024 SRD 5.2 under the Creative Commons CC-BY-4.0 license.
+
+When you add a Magic, Attack, Items, or Features card, the autocomplete suggestions pull live from Open5e and pre-fill fields using 2024 stat blocks — including spell save DCs, attack bonuses, damage, and descriptions.
+
+---
+
 ## Tech Stack
 
 - Vanilla JavaScript (no framework)
 - CSS custom properties for theming
 - [Tabler Icons](https://tabler.io/icons) webfont
 - [Google Fonts](https://fonts.google.com) — Cinzel & Crimson Text
+- [Open5e API](https://api.open5e.com/v2/) — 2024 SRD 5.2 (CC-BY-4.0)
 - localStorage for persistence

@@ -145,6 +145,27 @@ function fillSpellForm(spell) {
 // The Open5e weapons endpoint ignores name filters and always returns all weapons,
 // so we preload the full list once and filter client-side.
 let _weaponCache = null;
+let _featureCache = null;
+
+const SRD_CLASS_NAMES = ['Barbarian','Bard','Cleric','Druid','Fighter','Monk','Paladin','Ranger','Rogue','Sorcerer','Warlock','Wizard'];
+
+async function _loadClassFeatures() {
+  if (_featureCache) return _featureCache;
+  try {
+    const perClass = await Promise.all(
+      SRD_CLASS_NAMES.map(async cls => {
+        try {
+          const r = await fetch(`https://www.dnd5eapi.co/api/classes/${cls.toLowerCase()}/features`);
+          if (!r.ok) return [];
+          const data = await r.json();
+          return (data.results || []).map(f => ({ ...f, _kind: 'class_feature', _className: cls }));
+        } catch { return []; }
+      })
+    );
+    _featureCache = perClass.flat();
+  } catch { _featureCache = []; }
+  return _featureCache;
+}
 
 async function _loadWeapons() {
   if (_weaponCache) return _weaponCache;
@@ -265,26 +286,69 @@ function fillItemForm(item) {
   if (descEl) descEl.value = item.desc || '';
 }
 
-// ── FEAT / SPECIES LOOKUP ─────────────────────────────────────
+// ── FEAT / SPECIES / CLASS FEATURE LOOKUP ─────────────────────
 async function fetchFeatSuggestions(query) {
   if (!query || query.length < 2) return [];
+  const safeFetch = async url => {
+    try {
+      const r = await fetch(url);
+      return r.ok ? await r.json() : { results: [] };
+    } catch { return { results: [] }; }
+  };
+  const q = query.toLowerCase();
+  const [d1, allFeatures] = await Promise.all([
+    safeFetch(`https://api.open5e.com/v2/feats/?name__icontains=${encodeURIComponent(query)}&limit=10&ordering=name`),
+    _loadClassFeatures(),
+  ]);
+  const feats    = (d1.results || []).filter(f => f.key && f.key.startsWith('srd-2024_')).map(f => ({...f, _kind: 'feat'}));
+  const features = allFeatures.filter(f => f.name.toLowerCase().includes(q)).slice(0, 8);
+  return [...feats, ...features];
+}
+
+async function fetchSpeciesSuggestions(query) {
+  if (!query || query.length < 2) return [];
   try {
-    const [r1, r2] = await Promise.all([
-      fetch(`https://api.open5e.com/v2/feats/?name__icontains=${encodeURIComponent(query)}&limit=15&ordering=name`),
-      fetch(`https://api.open5e.com/v2/species/?name__icontains=${encodeURIComponent(query)}&limit=10&ordering=name`),
-    ]);
-    const [d1, d2] = await Promise.all([r1.ok ? r1.json() : {results:[]}, r2.ok ? r2.json() : {results:[]}]);
-    const feats   = (d1.results || []).filter(f => f.key && f.key.startsWith('srd-2024_')).map(f => ({...f, _kind: 'feat'}));
-    const species = (d2.results || []).filter(s => s.key && s.key.startsWith('srd-2024_')).map(s => ({...s, _kind: 'species'}));
-    return [...feats, ...species];
+    const r = await fetch(`https://api.open5e.com/v2/species/?name__icontains=${encodeURIComponent(query)}&limit=8&ordering=name`);
+    if (!r.ok) return [];
+    const data = await r.json();
+    return (data.results || []).filter(s => s.key && s.key.startsWith('srd-2024_'));
   } catch { return []; }
 }
 
-function fillFeatForm(entry) {
+async function fetchClassSuggestions(query) {
+  if (!query || query.length < 1) return [];
+  const q = query.toLowerCase();
+  return SRD_CLASS_NAMES.filter(c => c.toLowerCase().startsWith(q));
+}
+
+async function fillFeatForm(entry) {
   const nameEl = document.getElementById('f-name');
   if (nameEl) nameEl.value = entry.name || '';
 
-  if (entry._kind === 'species') {
+  if (entry._kind === 'class_feature') {
+    const badgeEl = document.getElementById('f-badge');
+    if (badgeEl) badgeEl.value = 'class';
+
+    // Fetch full details (list endpoint only has index/name/url)
+    try {
+      const r = await fetch(`https://www.dnd5eapi.co${entry.url}`);
+      if (r.ok) {
+        const full = await r.json();
+        const prereqEl = document.getElementById('f-prerequisite');
+        if (prereqEl) {
+          const cls = full.class?.name || full.subclass?.name || '';
+          const lvl = full.level;
+          prereqEl.value = cls && lvl ? `${cls} Level ${lvl}` : cls || '';
+        }
+        const descEl = document.getElementById('f-desc');
+        if (descEl) descEl.value = Array.isArray(full.desc) ? full.desc.join('\n\n') : (full.desc || '');
+      }
+    } catch { /* leave fields blank on error */ }
+
+    const hintEl = document.getElementById('f-desc-hint');
+    if (hintEl) hintEl.style.display = '';
+
+  } else if (entry._kind === 'species') {
     const badgeEl = document.getElementById('f-badge');
     if (badgeEl) badgeEl.value = 'species';
 
@@ -299,6 +363,9 @@ function fillFeatForm(entry) {
         .join('\n\n');
       descEl.value = traits || entry.desc || '';
     }
+
+    const hintEl = document.getElementById('f-desc-hint');
+    if (hintEl) hintEl.style.display = 'none';
   } else {
     const badgeEl = document.getElementById('f-badge');
     if (badgeEl) badgeEl.value = (entry.type && entry.type.toLowerCase() === 'origin') ? 'origin' : 'feat';
@@ -311,6 +378,9 @@ function fillFeatForm(entry) {
       const benefits = (entry.benefits || []).map(b => b.desc || b).join('\n\n');
       descEl.value = entry.desc ? (benefits ? entry.desc + '\n\n' + benefits : entry.desc) : benefits;
     }
+
+    const hintEl = document.getElementById('f-desc-hint');
+    if (hintEl) hintEl.style.display = 'none';
   }
 }
 
@@ -676,7 +746,7 @@ function openNewCharSheet(fromWelcome) {
 
       <div class="form-row">
         <label class="form-label"><i class="ti ti-user"></i> Character Name</label>
-        <input class="form-input" id="nc-name" placeholder="Character Name" autocomplete="off">
+        <input class="form-input" id="nc-name" placeholder="John Dungeon" autocomplete="off">
       </div>
 
       <div class="form-row-2">
@@ -691,13 +761,15 @@ function openNewCharSheet(fromWelcome) {
       </div>
 
       <div class="form-row-2">
-        <div class="form-row">
+        <div class="form-row" style="position:relative;">
           <label class="form-label"><i class="ti ti-wand"></i> Class</label>
-          <input class="form-input" id="nc-class" placeholder="Fighter">
+          <input class="form-input" id="nc-class" placeholder="Fighter" autocomplete="off">
+          <div class="spell-suggestions" id="nc-class-suggestions"></div>
         </div>
-        <div class="form-row">
+        <div class="form-row" style="position:relative;">
           <label class="form-label"><i class="ti ti-dna-2"></i> Species</label>
-          <input class="form-input" id="nc-species" placeholder="Human">
+          <input class="form-input" id="nc-species" placeholder="Human" autocomplete="off">
+          <div class="spell-suggestions" id="nc-species-suggestions"></div>
         </div>
       </div>
 
@@ -802,6 +874,7 @@ function openNewCharSheet(fromWelcome) {
       savingThrows: blankSavingThrows(),
       resistances: [],
       immunities: [],
+      vulnerabilities: [],
       abilities: blankAbilities(),
       spellSlots: blankSpellSlots(),
     });
@@ -823,6 +896,13 @@ function openNewCharSheet(fromWelcome) {
       });
     }
   });
+
+  wireInputSearch('nc-species', 'nc-species-suggestions',
+    fetchSpeciesSuggestions, () => '2024 SRD',
+    s => { document.getElementById('nc-species').value = s.name || s; });
+  wireInputSearch('nc-class', 'nc-class-suggestions',
+    fetchClassSuggestions, () => '',
+    cls => { document.getElementById('nc-class').value = typeof cls === 'string' ? cls : cls.name; }, 1);
 
   openOverlay('newCharOverlay');
 }
@@ -856,8 +936,8 @@ function renderAbilityCard(a, key) {
     const magicLabels = { spell: 'Spell', 'spell-attack': 'Spell Attack', buff: 'Buff', ability: 'Ability' };
     badgeLabel = magicLabels[a.badge] || 'Spell';
   } else if (category === 'features') {
-    const featLabels = { feat: 'Feat', origin: 'Origin', species: 'Species' };
-    const featBadgeIcons = { feat: 'ti-bookmark', origin: 'ti-globe', species: 'ti-dna-2' };
+    const featLabels = { class: 'Class', feat: 'Feat', origin: 'Origin', species: 'Species' };
+    const featBadgeIcons = { class: 'ti-award', feat: 'ti-bookmark', origin: 'ti-globe', species: 'ti-dna-2' };
     const featBadgeIcon = featBadgeIcons[a.badge] || 'ti-bookmark';
     badgeLabel = `<i class="ti ${featBadgeIcon}"></i> ${featLabels[a.badge] || 'Feat'}`;
   } else {
@@ -905,7 +985,13 @@ function renderAbilityCard(a, key) {
     statsHTML = `<span class="ability-stat">${esc(a.stat)}</span>`;
   }
 
-  const actionType = key.endsWith('_bonus') ? 'Bonus Action' : key.endsWith('_action') ? 'Action' : '';
+  let actionType = key.endsWith('_bonus') ? 'Bonus Action' : key.endsWith('_action') ? 'Action' : '';
+  if (category === 'magic' && a.castingTime) {
+    const ct = a.castingTime.toLowerCase();
+    if (ct.includes('bonus')) actionType = 'Bonus Action';
+    else if (ct.includes('reaction')) actionType = 'Reaction';
+    else if (ct.includes('action')) actionType = 'Action';
+  }
   const spellLvlAbbr = (() => {
     if (!a.spellLevel) return '';
     const m = a.spellLevel.match(/^(\d+(?:st|nd|rd|th))(?:\s+level)?$/i);
@@ -1008,8 +1094,8 @@ function renderActTab() {
 
     // Flat layout for features/items (no end cap)
     if (cat !== 'attack' && cat !== 'magic') {
-      const featLabels   = { feat: 'Feat', origin: 'Origin', species: 'Species' };
-      const featIcons    = { feat: 'ti-bookmark', origin: 'ti-globe', species: 'ti-dna-2' };
+      const featLabels   = { class: 'Class', feat: 'Feat', origin: 'Origin', species: 'Species' };
+      const featIcons    = { class: 'ti-award', feat: 'ti-bookmark', origin: 'ti-globe', species: 'ti-dna-2' };
       const featIcon     = cat === 'features' ? (featIcons[a.badge] || '') : '';
       const featSubtype  = cat === 'features' ? (featLabels[a.badge] || '') : '';
       const itemStat     = cat === 'items' && a.stat ? a.stat : '';
@@ -1069,7 +1155,13 @@ function renderActTab() {
 
     const hasEndCap = !!capNum;
     const isDual    = hasEndCap && !!capNum2;
-    const actionLabelAM = isBonus ? 'Bonus Action' : 'Action';
+    let actionLabelAM = isBonus ? 'Bonus Action' : 'Action';
+    if (cat === 'magic' && a.castingTime) {
+      const ct = a.castingTime.toLowerCase();
+      if (ct.includes('bonus')) actionLabelAM = 'Bonus Action';
+      else if (ct.includes('reaction')) actionLabelAM = 'Reaction';
+      else if (ct.includes('action')) actionLabelAM = 'Action';
+    }
     let spellLvlShort = '';
     if (cat === 'magic' && a.spellLevel) {
       const m = a.spellLevel.match(/^(\d+(?:st|nd|rd|th))(?:\s+level)?$/i);
@@ -1309,8 +1401,8 @@ function renderExploreTab() {
     const bonus    = calcSkillBonus(c, skill.key);
     const bonusStr = (bonus >= 0 ? '+' : '') + bonus;
     const adv      = skillAdvData[skill.key] || 'none';
-    const advIcon  = adv === 'adv'    ? `<span class="adv-badge adv-badge-adv">A</span>`
-                   : adv === 'disadv' ? `<span class="adv-badge adv-badge-disadv">D</span>`
+    const advIcon  = adv === 'adv'    ? `<span class="adv-badge adv-badge-adv" data-tooltip="Advantage">A</span>`
+                   : adv === 'disadv' ? `<span class="adv-badge adv-badge-disadv" data-tooltip="Disadvantage">D</span>`
                    : '';
     return `
       <div class="skill-row" data-skill="${skill.key}">
@@ -1429,8 +1521,8 @@ function renderDefenseTab() {
     const bonus   = getSaveBonus(c, ab);
     const bStr    = (bonus >= 0 ? '+' : '') + bonus;
     const adv     = st.adv || 'none';
-    const advIcon = adv === 'adv'    ? `<span class="adv-badge adv-badge-adv">A</span>`
-                  : adv === 'disadv' ? `<span class="adv-badge adv-badge-disadv">D</span>`
+    const advIcon = adv === 'adv'    ? `<span class="adv-badge adv-badge-adv" data-tooltip="Advantage">A</span>`
+                  : adv === 'disadv' ? `<span class="adv-badge adv-badge-disadv" data-tooltip="Disadvantage">D</span>`
                   : '';
     return `
       <div class="skill-row save-row" data-ability="${ab}">
@@ -1445,13 +1537,13 @@ function renderDefenseTab() {
       </div>`;
   }).join('');
 
-  const resistances = (c && c.resistances) || [];
-  const immunities  = (c && c.immunities)  || [];
+  const resistances    = (c && c.resistances)    || [];
+  const immunities     = (c && c.immunities)     || [];
+  const vulnerabilities = (c && c.vulnerabilities) || [];
 
   const resistTags = resistances.map((r, i) => `<div class="def-tag def-tag-resist def-tag-edit" data-type="resistances" data-index="${i}">${esc(r)}</div>`).join('');
   const immuneTags = immunities.map((im, i) => `<div class="def-tag def-tag-immune def-tag-edit" data-type="immunities" data-index="${i}">${esc(im)}</div>`).join('');
-  const noTags     = !resistances.length && !immunities.length;
-
+  const vulnTags   = vulnerabilities.map((v, i) => `<div class="def-tag def-tag-vuln def-tag-edit" data-type="vulnerabilities" data-index="${i}">${esc(v)}</div>`).join('');
   tab.innerHTML = `
     <div class="defense-summary">
       <div class="defense-ac">
@@ -1460,9 +1552,18 @@ function renderDefenseTab() {
         <div class="defense-ac-lbl">AC</div>
       </div>
       <div class="defense-tags-col">
-        ${noTags ? `<span style="color:var(--ink-faint);font-style:italic;font-size:var(--text-sm);">No resistances<br>or immunities.</span>` : ''}
-        ${resistTags ? `<div><div class="defense-tags-section-lbl">Resist</div><div class="defense-tags">${resistTags}</div></div>` : ''}
-        ${immuneTags ? `<div><div class="defense-tags-section-lbl">Immune</div><div class="defense-tags">${immuneTags}</div></div>` : ''}
+        <div>
+          <div class="defense-tags-section-lbl"><i class="ti ti-shield-up c-green"></i> Resistances</div>
+          <div class="defense-tags">${resistTags}<button class="def-tag-add def-tag-add-resist" data-add-type="resistances"><i class="ti ti-plus"></i> Add</button></div>
+        </div>
+        <div>
+          <div class="defense-tags-section-lbl"><i class="ti ti-shield-cancel c-gold"></i> Immunities</div>
+          <div class="defense-tags">${immuneTags}<button class="def-tag-add def-tag-add-immune" data-add-type="immunities"><i class="ti ti-plus"></i> Add</button></div>
+        </div>
+        <div>
+          <div class="defense-tags-section-lbl"><i class="ti ti-shield-down c-red"></i> Vulnerabilities</div>
+          <div class="defense-tags">${vulnTags}<button class="def-tag-add def-tag-add-vuln" data-add-type="vulnerabilities"><i class="ti ti-plus"></i> Add</button></div>
+        </div>
       </div>
     </div>
 
@@ -1473,16 +1574,6 @@ function renderDefenseTab() {
       <span><i class="ti ti-circle-filled c-gold"></i> Proficient</span>
     </div>
 
-    <div class="resist-immune-cols">
-      <div>
-        <div class="section-hdr section-gap">Resistances</div>
-        <button class="add-btn" id="addResistBtn"><i class="ti ti-plus"></i> Add Resistance</button>
-      </div>
-      <div>
-        <div class="section-hdr section-gap">Immunities</div>
-        <button class="add-btn" id="addImmunityBtn"><i class="ti ti-plus"></i> Add Immunity</button>
-      </div>
-    </div>
     <div class="project-link"><a href="https://github.com/BenzurX/D-D-Player-Card" target="_blank" rel="noopener"><i class="ti ti-brand-github"></i> Learn more about this project</a></div>`;
 
   tab.querySelectorAll('.prof-toggle[data-save]').forEach(btn => {
@@ -1510,8 +1601,10 @@ function renderDefenseTab() {
     });
   });
 
-  document.getElementById('addResistBtn').addEventListener('click', () => openAddResistanceSheet('resistances'));
-  document.getElementById('addImmunityBtn').addEventListener('click', () => openAddResistanceSheet('immunities'));
+  tab.querySelectorAll('.def-tag-add').forEach(btn => {
+    btn.addEventListener('click', () => openAddResistanceSheet(btn.dataset.addType));
+  });
+
 }
 
 // ── NAV SWITCHING ─────────────────────────────────────────────
@@ -1858,13 +1951,15 @@ function openSkillOverrideSheet(skillKey) {
 
 // ── OPEN ADD / EDIT RESISTANCE / IMMUNITY SHEET ───────────────
 function openAddResistanceSheet(type, editIndex = null) {
-  const label    = type === 'resistances' ? 'Resistance' : 'Immunity';
+  const label = type === 'resistances' ? 'Resistance' : type === 'immunities' ? 'Immunity' : 'Vulnerability';
+  const iconName  = type === 'resistances' ? 'ti-shield-up' : type === 'immunities' ? 'ti-shield-cancel' : 'ti-shield-down';
+  const iconColor = type === 'resistances' ? 'c-green' : type === 'immunities' ? 'c-gold' : 'c-red';
   const isEdit   = editIndex !== null;
   const c        = currentChar();
   const existing = isEdit ? (c && c[type] && c[type][editIndex]) || '' : '';
 
   document.getElementById('sheetTitle').innerHTML =
-    `<i class="ti ti-${isEdit ? 'pencil' : 'plus'} c-blue"></i> ${isEdit ? 'Edit' : 'Add'} ${label}`;
+    `<i class="ti ${isEdit ? 'ti-pencil c-blue' : `${iconName} ${iconColor}`}"></i> ${isEdit ? 'Edit' : 'Add'} ${label}`;
   document.getElementById('sheetBody').innerHTML = `
     <div class="edit-form">
       <div class="form-row">
@@ -1943,7 +2038,7 @@ function openAbilityDetailSheet(ability, key) {
     melee: 'Melee', ranged: 'Ranged', thrown: 'Thrown',
     spell: 'Spell', 'spell-attack': 'Spell Attack', buff: 'Buff', ability: 'Ability',
     action: 'Action', bonus: 'Bonus', passive: 'Passive',
-    feat: 'Feat', origin: 'Origin', species: 'Species',
+    class: 'Class', feat: 'Feat', origin: 'Origin', species: 'Species',
     reaction: 'Reaction',
   };
 
@@ -2034,6 +2129,7 @@ function buildForm(ability, key) {
       ]
     : category === 'features'
     ? [
+        { value: 'class',   label: 'Class' },
         { value: 'feat',    label: 'Feat' },
         { value: 'origin',  label: 'Origin' },
         { value: 'species', label: 'Species' },
@@ -2200,12 +2296,13 @@ function buildForm(ability, key) {
         ${hasSearch ? `<div id="${searchSugIds[category]}" class="spell-suggestions"></div>` : ''}
       </div>
       ${category !== 'reaction' ? `
+      ${category !== 'items' ? `
       <div class="form-row">
         <label class="form-label">${category === 'attack' ? 'Weapon Type' : 'Type'}</label>
         <select class="form-select" id="f-badge">
           ${badges.map(b => `<option value="${b.value}" ${v('badge') === b.value ? 'selected' : ''}>${b.label}</option>`).join('')}
         </select>
-      </div>
+      </div>` : ''}
       <div class="form-row">
         <label class="form-label">Action Type</label>
         <div class="prof-seg" id="action-type-seg">
@@ -2217,6 +2314,7 @@ function buildForm(ability, key) {
       <div class="form-row">
         <label class="form-label">Description</label>
         <textarea class="form-textarea${category === 'magic' ? ' form-textarea-magic' : ''}" id="f-desc" placeholder="What does this ability do?">${esc(v('desc'))}</textarea>
+        ${category === 'features' ? `<p class="form-hint-2014" id="f-desc-hint" style="${ability && ability.badge === 'class' ? '' : 'display:none'}">Description pulled from the 2014 SRD — may not reflect 2024 rules. Review and edit as needed.</p>` : ''}
       </div>
       <div class="form-actions">
         ${ability ? `<button class="btn-delete" id="f-delete"><i class="ti ti-trash"></i></button>` : ''}
@@ -2224,6 +2322,38 @@ function buildForm(ability, key) {
         <button class="btn-save"   id="f-save">Save</button>
       </div>
     </div>`;
+}
+
+// ── GENERIC AUTOCOMPLETE HELPER ───────────────────────────────
+function wireInputSearch(inputId, sugId, fetchFn, labelFn, fillFn, minLen = 2) {
+  const searchEl  = document.getElementById(inputId);
+  const suggestEl = document.getElementById(sugId);
+  if (!searchEl || !suggestEl) return;
+  let debounce;
+  searchEl.addEventListener('input', () => {
+    clearTimeout(debounce);
+    const q = searchEl.value.trim();
+    if (q.length < minLen) { suggestEl.innerHTML = ''; return; }
+    debounce = setTimeout(async () => {
+      const results = await fetchFn(q);
+      if (!results.length) { suggestEl.innerHTML = ''; return; }
+      suggestEl.innerHTML = results.map((r, i) => {
+        const name = typeof r === 'string' ? r : esc(r.name);
+        const lbl  = typeof r === 'string' ? '' : esc(labelFn(r));
+        return `<div class="spell-suggest-item" data-idx="${i}">${name}${lbl ? `<span class="spell-suggest-lvl">${lbl}</span>` : ''}</div>`;
+      }).join('');
+      suggestEl._results = results;
+      suggestEl.querySelectorAll('.spell-suggest-item').forEach(item => {
+        item.addEventListener('mousedown', e => {
+          e.preventDefault();
+          const r = suggestEl._results[parseInt(item.dataset.idx)];
+          if (r) fillFn(r);
+          suggestEl.innerHTML = '';
+        });
+      });
+    }, 250);
+  });
+  searchEl.addEventListener('blur', () => setTimeout(() => { suggestEl.innerHTML = ''; }, 200));
 }
 
 // ── ATTACH ABILITY FORM LISTENERS ─────────────────────────────
@@ -2252,34 +2382,7 @@ function attachFormListeners(ability, key) {
     });
   }
 
-  function wireSearch(sugId, fetchFn, labelFn, fillFn) {
-    const searchEl  = document.getElementById('f-name');
-    const suggestEl = document.getElementById(sugId);
-    if (!searchEl || !suggestEl) return;
-    let debounce;
-    searchEl.addEventListener('input', () => {
-      clearTimeout(debounce);
-      const q = searchEl.value.trim();
-      if (q.length < 2) { suggestEl.innerHTML = ''; return; }
-      debounce = setTimeout(async () => {
-        const results = await fetchFn(q);
-        if (!results.length) { suggestEl.innerHTML = ''; return; }
-        suggestEl.innerHTML = results.map((r, i) =>
-          `<div class="spell-suggest-item" data-idx="${i}">${esc(r.name)}<span class="spell-suggest-lvl">${esc(labelFn(r))}</span></div>`
-        ).join('');
-        suggestEl._results = results;
-        suggestEl.querySelectorAll('.spell-suggest-item').forEach(item => {
-          item.addEventListener('mousedown', e => {
-            e.preventDefault();
-            const r = suggestEl._results[parseInt(item.dataset.idx)];
-            if (r) fillFn(r);
-            suggestEl.innerHTML = '';
-          });
-        });
-      }, 300);
-    });
-    searchEl.addEventListener('blur', () => setTimeout(() => { suggestEl.innerHTML = ''; }, 200));
-  }
+  const wireSearch = (sugId, fetchFn, labelFn, fillFn) => wireInputSearch('f-name', sugId, fetchFn, labelFn, fillFn);
 
   const LVLS = ['Cantrip','1st','2nd','3rd','4th','5th','6th','7th','8th','9th'];
   if (category === 'magic') {
@@ -2305,7 +2408,10 @@ function attachFormListeners(ability, key) {
       fillItemForm);
   } else if (category === 'features') {
     wireSearch('feat-suggestions', fetchFeatSuggestions,
-      f => f._kind === 'species' ? 'Species' : (f.type === 'Origin' ? 'Origin Feat' : 'Feat'),
+      f => {
+        if (f._kind === 'class_feature') return `${f._className || 'Class'} Feature`;
+        return f.type === 'Origin' ? 'Origin Feat' : 'Feat';
+      },
       fillFeatForm);
   }
 
@@ -2314,10 +2420,12 @@ function attachFormListeners(ability, key) {
     if (!name) { document.getElementById('f-name').focus(); return; }
 
     const badgeEl = document.getElementById('f-badge');
+    const activeTypeBtnEl = document.querySelector('#action-type-seg .prof-seg-btn.active');
+    const actionTypeVal = activeTypeBtnEl ? activeTypeBtnEl.dataset.state : (key.endsWith('_bonus') ? 'bonus' : 'action');
     const entry = {
       id:     ability ? ability.id : 'ab_' + Date.now(),
       name,
-      badge:  badgeEl ? badgeEl.value : 'reaction',
+      badge:  category === 'items' ? actionTypeVal : (badgeEl ? badgeEl.value : 'reaction'),
       desc:   document.getElementById('f-desc').value.trim(),
       pinned: ability ? (ability.pinned || false) : false,
     };
@@ -2409,6 +2517,39 @@ document.querySelectorAll('.add-btn[data-tab]').forEach(btn => {
 });
 
 // ── STAT EDIT ─────────────────────────────────────────────────
+function applyStatForm(c) {
+  const nameVal = document.getElementById('s-name')?.value.trim();
+  if (nameVal) c.name = nameVal;
+  c.level   = document.getElementById('s-level')?.value.trim()   ?? c.level;
+  c.species = document.getElementById('s-species')?.value.trim() ?? c.species;
+  c.cls     = document.getElementById('s-cls')?.value.trim()     ?? c.cls;
+  const subParts = [
+    c.level   ? `Lvl ${c.level}` : null,
+    c.species || null,
+    c.cls     || null,
+  ].filter(Boolean);
+  if (subParts.length) c.sub = subParts.join(' · ');
+  c.hp    = parseInt(document.getElementById('s-hp')?.value)    || c.hp;
+  c.ac    = parseInt(document.getElementById('s-ac')?.value)    || c.ac;
+  c.speed = document.getElementById('s-speed')?.value.trim()   || c.speed;
+  c.prof  = document.getElementById('s-prof')?.value.trim()    || c.prof;
+  ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(ab => {
+    c[ab] = parseInt(document.getElementById(`s-${ab}`)?.value) || c[ab] || 10;
+  });
+  c.size          = document.querySelector('#size-seg .prof-seg-btn.active')?.dataset.state         || c.size || 'medium';
+  c.spellAbility  = document.querySelector('#spell-ability-seg .prof-seg-btn.active')?.dataset.state || 'none';
+  c.attacksPerRound = parseInt(document.getElementById('s-attacks')?.value) || 1;
+  if (!c.spellSlots) c.spellSlots = blankSpellSlots();
+  for (let lvl = 1; lvl <= 9; lvl++) {
+    const el = document.getElementById(`s-slot-${lvl}`);
+    if (el) {
+      const newMax  = parseInt(el.value) || 0;
+      const oldUsed = (c.spellSlots[lvl] || {}).used || 0;
+      c.spellSlots[lvl] = { max: newMax, used: Math.min(oldUsed, newMax) };
+    }
+  }
+}
+
 function openStatSheet() {
   const c = currentChar();
   if (!c) return;
@@ -2423,13 +2564,15 @@ function openStatSheet() {
           <label class="form-label"><i class="ti ti-crown"></i> Level</label>
           <input class="form-input" id="s-level" type="number" min="1" max="20" value="${esc(c.level || '')}">
         </div>
-        <div class="form-row">
+        <div class="form-row" style="position:relative;">
           <label class="form-label"><i class="ti ti-dna-2"></i> Species</label>
-          <input class="form-input" id="s-species" value="${esc(c.species || '')}" placeholder="Human">
+          <input class="form-input" id="s-species" value="${esc(c.species || '')}" placeholder="Human" autocomplete="off">
+          <div class="spell-suggestions" id="s-species-suggestions"></div>
         </div>
-        <div class="form-row">
+        <div class="form-row" style="position:relative;">
           <label class="form-label"><i class="ti ti-wand"></i> Class</label>
-          <input class="form-input" id="s-cls" value="${esc(c.cls || '')}">
+          <input class="form-input" id="s-cls" value="${esc(c.cls || '')}" autocomplete="off">
+          <div class="spell-suggestions" id="s-cls-suggestions"></div>
         </div>
       </div>
       <div class="form-row-2">
@@ -2505,12 +2648,13 @@ function openStatSheet() {
       <div class="form-row">
         <label class="form-label"><i class="ti ti-sparkles c-purple"></i> Spellcasting Ability</label>
         <div class="prof-seg" id="spell-ability-seg">
-          <button class="prof-seg-btn${!c.spellAbility || c.spellAbility === 'none' ? ' active' : ''}" data-state="none">—</button>
+          <button class="prof-seg-btn${!c.spellAbility || c.spellAbility === 'none' ? ' active' : ''}" data-state="none">None</button>
           <button class="prof-seg-btn${c.spellAbility === 'int' ? ' active' : ''}" data-state="int">INT</button>
           <button class="prof-seg-btn${c.spellAbility === 'wis' ? ' active' : ''}" data-state="wis">WIS</button>
           <button class="prof-seg-btn${c.spellAbility === 'cha' ? ' active' : ''}" data-state="cha">CHA</button>
         </div>
       </div>
+      <div id="spell-slots-section" style="${!c.spellAbility || c.spellAbility === 'none' ? 'display:none' : ''}">
       <div class="section-lbl"><i class="ti ti-wand c-purple"></i> Spell Slots</div>
       <div class="tab-hint" style="margin-bottom:10px;">Max slots per level. Leave at 0 if not a caster.</div>
       <div class="slot-config-grid">
@@ -2523,6 +2667,7 @@ function openStatSheet() {
           </div>`;
         }).join('')}
       </div>
+      </div>
       <div class="form-actions" style="margin-top:4px;">
         <button class="btn-cancel" id="s-cancel">Cancel</button>
         <button class="btn-save"   id="s-save">Save</button>
@@ -2531,42 +2676,19 @@ function openStatSheet() {
 
   document.getElementById('s-cancel').addEventListener('click', () => closeOverlay('statOverlay'));
   document.getElementById('s-save').addEventListener('click', () => {
-    c.name    = document.getElementById('s-name').value.trim()  || c.name;
-    c.level   = document.getElementById('s-level').value.trim();
-    c.species = document.getElementById('s-species').value.trim();
-    c.cls     = document.getElementById('s-cls').value.trim();
-    const subParts = [
-      c.level ? `Lvl ${c.level}` : null,
-      c.species || null,
-      c.cls || null,
-    ].filter(Boolean);
-    if (subParts.length) c.sub = subParts.join(' · ');
-    c.hp    = parseInt(document.getElementById('s-hp').value)  || c.hp;
-    c.ac    = parseInt(document.getElementById('s-ac').value)  || c.ac;
-    c.speed = document.getElementById('s-speed').value.trim() || c.speed;
-    c.prof  = document.getElementById('s-prof').value.trim()  || c.prof;
-    c.str   = parseInt(document.getElementById('s-str').value) || c.str || 10;
-    c.dex   = parseInt(document.getElementById('s-dex').value) || c.dex || 10;
-    c.con   = parseInt(document.getElementById('s-con').value) || c.con || 10;
-    c.int   = parseInt(document.getElementById('s-int').value) || c.int || 10;
-    c.wis   = parseInt(document.getElementById('s-wis').value) || c.wis || 10;
-    c.cha   = parseInt(document.getElementById('s-cha').value) || c.cha || 10;
-    c.size          = document.querySelector('#size-seg .prof-seg-btn.active')?.dataset.state || c.size || 'medium';
-    c.spellAbility  = document.querySelector('#spell-ability-seg .prof-seg-btn.active')?.dataset.state || 'none';
-    c.attacksPerRound = parseInt(document.getElementById('s-attacks').value) || 1;
-    if (!c.spellSlots) c.spellSlots = blankSpellSlots();
-    for (let lvl = 1; lvl <= 9; lvl++) {
-      const input = document.getElementById(`s-slot-${lvl}`);
-      if (input) {
-        const newMax = parseInt(input.value) || 0;
-        const oldUsed = (c.spellSlots[lvl] || {}).used || 0;
-        c.spellSlots[lvl] = { max: newMax, used: Math.min(oldUsed, newMax) };
-      }
-    }
+    applyStatForm(c);
     save();
     renderHeader();
     renderAllSimpleTabs();
     closeOverlay('statOverlay');
+  });
+
+  document.getElementById('statOverlay').addEventListener('focusout', e => {
+    if (!e.target.matches('input')) return;
+    applyStatForm(c);
+    save();
+    renderHeader();
+    renderAllSimpleTabs();
   });
 
   document.getElementById('size-seg').addEventListener('click', e => {
@@ -2581,6 +2703,8 @@ function openStatSheet() {
     if (!btn) return;
     document.querySelectorAll('#spell-ability-seg .prof-seg-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    const slotsSection = document.getElementById('spell-slots-section');
+    if (slotsSection) slotsSection.style.display = btn.dataset.state === 'none' ? 'none' : '';
   });
 
   ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(ab => {
@@ -2592,6 +2716,13 @@ function openStatSheet() {
       });
     }
   });
+
+  wireInputSearch('s-species', 's-species-suggestions',
+    fetchSpeciesSuggestions, () => '2024 SRD',
+    s => { document.getElementById('s-species').value = s.name || s; });
+  wireInputSearch('s-cls', 's-cls-suggestions',
+    fetchClassSuggestions, () => '',
+    cls => { document.getElementById('s-cls').value = typeof cls === 'string' ? cls : cls.name; }, 1);
 
   openOverlay('statOverlay');
 }
@@ -2638,8 +2769,8 @@ function openHeroSummary() {
       <div class="hero-pills">
         <div class="hero-pill"><i class="ti ti-heart c-red"></i><span>${c.hp || '—'}</span><div class="hero-pill-lbl">Max HP</div></div>
         <div class="hero-pill"><i class="ti ti-shield ac-i"></i><span>${c.ac || '—'}</span><div class="hero-pill-lbl">AC</div></div>
-        <div class="hero-pill"><i class="ti ti-shoe speed-i"></i><span>${esc(c.speed || '30ft')}</span><div class="hero-pill-lbl">Speed</div></div>
-        <div class="hero-pill"><i class="ti ti-star prof-i"></i><span>${esc(c.prof || '+2')}</span><div class="hero-pill-lbl">Prof</div></div>
+        <div class="hero-pill"><i class="ti ti-shoe speed-i"></i><span>${esc(c.speed || '—')}</span><div class="hero-pill-lbl">Speed</div></div>
+        <div class="hero-pill"><i class="ti ti-star prof-i"></i><span>${esc(c.prof || '—')}</span><div class="hero-pill-lbl">Proficiency</div></div>
       </div>
       <div class="hero-ability-grid">${abilityGrid}</div>
       <div class="hero-actions">
@@ -2803,12 +2934,13 @@ setTimeout(hideLoading, 1200);
   });
 
   document.addEventListener('mouseout', e => {
-    if (e.target.closest('[data-tooltip]')) {
-      hideTimer = setTimeout(() => {
-        tip.style.opacity = '0';
-        setTimeout(() => tip.style.display = 'none', 150);
-      }, 80);
-    }
+    const el = e.target.closest('[data-tooltip]');
+    if (!el) return;
+    if (el.contains(e.relatedTarget)) return;
+    hideTimer = setTimeout(() => {
+      tip.style.opacity = '0';
+      setTimeout(() => tip.style.display = 'none', 150);
+    }, 150);
   });
 })();
 
