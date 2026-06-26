@@ -4,6 +4,13 @@ All notable changes to Combat Sheet are documented here.
 
 ---
 
+## [1.6] — 2026-06-26
+
+### Changed
+- **Saving Throws — single column on mobile** — the six saving throw rows now stack in a single column on mobile (was 2 columns); 2 columns restored on tablet+
+
+---
+
 ## [1.5] — 2026-06-26
 
 ### Added

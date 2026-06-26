@@ -1181,6 +1181,9 @@ html, body {
   grid-template-columns: 1fr 1fr;
   gap: 6px;
 }
+#saveList {
+  grid-template-columns: 1fr;
+}
 .skill-grid .skill-row {
   background: var(--parchment-mid);
   border: 1px solid var(--border);
@@ -1990,6 +1993,9 @@ html, body {
 
   .skill-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+  #saveList {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   /* Centered modal replaces bottom sheet */
