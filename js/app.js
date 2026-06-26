@@ -1393,6 +1393,23 @@ function renderExploreTab() {
   const passInv  = passInvOver  ? passiveOvr.investigation : 10 + calcSkillBonus(c, 'investigation');
   const passIns  = passInsOver  ? passiveOvr.insight       : 10 + calcSkillBonus(c, 'insight');
 
+  // ── Spell stats ──────────────────────────────────────────
+  const hasSpell    = !!(c && c.spellAbility && c.spellAbility !== 'none');
+  const spellAbKey  = hasSpell ? c.spellAbility : null;
+  const spellModVal = spellAbKey ? getAbilityMod(c[spellAbKey] || 10) : null;
+  const profBon     = parseInt((c && c.prof) || '+2') || 2;
+  const autoSpMod   = spellModVal;
+  const autoSpAtk   = spellModVal !== null ? profBon + spellModVal : null;
+  const autoSpDC    = spellModVal !== null ? 8 + profBon + spellModVal : null;
+  const spellOvr    = (c && c.spellStats) || {};
+  const dispSpMod   = spellOvr.modOverride    != null ? spellOvr.modOverride    : autoSpMod;
+  const dispSpAtk   = spellOvr.attackOverride != null ? spellOvr.attackOverride : autoSpAtk;
+  const dispSpDC    = spellOvr.dcOverride     != null ? spellOvr.dcOverride     : autoSpDC;
+  const modOvrd     = spellOvr.modOverride    != null;
+  const atkOvrd     = spellOvr.attackOverride != null;
+  const dcOvrd      = spellOvr.dcOverride     != null;
+  const fmtSp       = v => v !== null ? (v >= 0 ? '+' : '') + v : '—';
+
   // ── Skills ───────────────────────────────────────────────
   const skillAdvData = (c && c.skillAdv) || {};
   const skillsHTML = SKILLS.map(skill => {
@@ -1472,6 +1489,26 @@ function renderExploreTab() {
     </div>
     </div>
 
+    ${hasSpell ? `
+    <div class="section-hdr section-gap">Spellcasting</div>
+    <div class="passive-row" id="spellStatsRow">
+      <div class="passive-card tappable">
+        <div class="passive-top"><i class="ti ti-sparkles c-purple passive-icon"></i><div class="passive-val${modOvrd ? ' is-override' : ''}">${fmtSp(dispSpMod)}</div></div>
+        <span class="passive-dots"></span>
+        <div class="passive-label">Spell Mod</div>
+      </div>
+      <div class="passive-card tappable">
+        <div class="passive-top"><i class="ti ti-wand c-purple passive-icon"></i><div class="passive-val${atkOvrd ? ' is-override' : ''}">${fmtSp(dispSpAtk)}</div></div>
+        <span class="passive-dots"></span>
+        <div class="passive-label">Spell Attack</div>
+      </div>
+      <div class="passive-card tappable">
+        <div class="passive-top"><i class="ti ti-shield-bolt c-purple passive-icon"></i><div class="passive-val${dcOvrd ? ' is-override' : ''}">${dispSpDC !== null ? dispSpDC : '—'}</div></div>
+        <span class="passive-dots"></span>
+        <div class="passive-label">Save DC</div>
+      </div>
+    </div>` : ''}
+
     <div class="section-hdr">Skills</div>
     <div class="skill-grid">${skillsHTML}</div>
     <div class="skill-legend">
@@ -1485,6 +1522,11 @@ function renderExploreTab() {
   document.getElementById('passiveRow').querySelectorAll('.passive-card').forEach(card => {
     card.addEventListener('click', () => openPassiveScoresSheet());
   });
+  if (hasSpell) {
+    document.getElementById('spellStatsRow').querySelectorAll('.passive-card').forEach(card => {
+      card.addEventListener('click', () => openSpellStatsSheet());
+    });
+  }
 
   tab.querySelectorAll('.prof-toggle').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1862,6 +1904,57 @@ function openPassiveScoresSheet() {
     c.passiveOverrides.perception    = rawPerc === '' ? null : parseInt(rawPerc);
     c.passiveOverrides.investigation = rawInv  === '' ? null : parseInt(rawInv);
     c.passiveOverrides.insight       = rawIns  === '' ? null : parseInt(rawIns);
+    save();
+    closeOverlay('overlay');
+    renderExploreTab();
+  });
+  openOverlay('overlay');
+}
+
+// ── OPEN SPELL STATS SHEET ───────────────────────────────────
+function openSpellStatsSheet() {
+  const c = currentChar();
+  if (!c) return;
+  const spAb   = c.spellAbility && c.spellAbility !== 'none' ? c.spellAbility : null;
+  const spMod  = spAb ? getAbilityMod(c[spAb] || 10) : null;
+  const prof   = parseInt(c.prof || '+2') || 2;
+  const autoMod = spMod;
+  const autoAtk = spMod !== null ? prof + spMod : null;
+  const autoDC  = spMod !== null ? 8 + prof + spMod : null;
+  const fmt    = v => v !== null && v !== undefined ? (v >= 0 ? '+' : '') + v : '—';
+  const ovr    = c.spellStats || {};
+
+  document.getElementById('sheetTitle').innerHTML = `<i class="ti ti-sparkles c-purple"></i> Spellcasting Stats`;
+  document.getElementById('sheetBody').innerHTML = `
+    <div class="edit-form">
+      <div class="tab-hint" style="margin-bottom:4px;">Leave blank to auto-calculate from your spellcasting ability and proficiency.</div>
+      <div class="form-row">
+        <label class="form-label"><i class="ti ti-sparkles c-purple"></i> Spell Modifier</label>
+        <input class="form-input" id="ss-mod" type="number" value="${ovr.modOverride != null ? ovr.modOverride : ''}" placeholder="Auto (${fmt(autoMod)})">
+      </div>
+      <div class="form-row">
+        <label class="form-label"><i class="ti ti-wand c-purple"></i> Spell Attack</label>
+        <input class="form-input" id="ss-atk" type="number" value="${ovr.attackOverride != null ? ovr.attackOverride : ''}" placeholder="Auto (${fmt(autoAtk)})">
+      </div>
+      <div class="form-row">
+        <label class="form-label"><i class="ti ti-shield-bolt c-purple"></i> Spell Save DC</label>
+        <input class="form-input" id="ss-dc" type="number" value="${ovr.dcOverride != null ? ovr.dcOverride : ''}" placeholder="Auto (${autoDC !== null ? autoDC : '—'})">
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" id="ss-cancel">Cancel</button>
+        <button class="btn-save" id="ss-save">Save</button>
+      </div>
+    </div>`;
+
+  document.getElementById('ss-cancel').addEventListener('click', () => closeOverlay('overlay'));
+  document.getElementById('ss-save').addEventListener('click', () => {
+    if (!c.spellStats) c.spellStats = {};
+    const rawMod = document.getElementById('ss-mod').value.trim();
+    const rawAtk = document.getElementById('ss-atk').value.trim();
+    const rawDC  = document.getElementById('ss-dc').value.trim();
+    c.spellStats.modOverride    = rawMod === '' ? null : parseInt(rawMod);
+    c.spellStats.attackOverride = rawAtk === '' ? null : parseInt(rawAtk);
+    c.spellStats.dcOverride     = rawDC  === '' ? null : parseInt(rawDC);
     save();
     closeOverlay('overlay');
     renderExploreTab();

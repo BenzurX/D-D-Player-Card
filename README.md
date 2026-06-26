@@ -19,6 +19,8 @@ A mobile-first D&D quick-reference companion designed for use at the table. No i
 ## Getting Started
 
 1. Open `index.html` in a browser (Chrome or Safari recommended on mobile)
+   - On iOS: tap the Share icon → **Add to Home Screen** to run full-screen without the URL bar
+   - On Android: tap the browser menu → **Add to Home Screen** / **Install App**
 2. Tap **Create Character** on the welcome screen
 3. Fill in your character's name, class, race, level, and ability scores
 4. Hit **Save** — your character is ready
@@ -44,7 +46,7 @@ Lists your Reaction abilities. Tap **+ Add Reaction** to create one. Tap any car
 - **Saving Throws** — auto-calculated from your ability scores and proficiency bonus; tap any row to set proficiency or enter a manual override; tap the circle to quickly toggle proficiency
 
 ### Explore
-The Explore tab is organized into three sections:
+The Explore tab is organized into four sections (the Spellcasting section appears only if a Spellcasting Ability is set):
 
 **Character** — key traits at a glance:
 - **Size** — tap to open Character Stats and change your size (Sm / Med / Lg)
@@ -53,6 +55,8 @@ The Explore tab is organized into three sections:
 
 **Passive Scores** — auto-calculated from your ability scores and skill proficiencies:
 - Passive Perception, Passive Investigation, Passive Insight (each = 10 + skill bonus)
+
+**Spellcasting** *(only visible when Spellcasting Ability is set)* — shows Spell Modifier, Spell Attack bonus, and Spell Save DC, auto-calculated from your spellcasting ability score and proficiency bonus. Tap any card to enter a manual override.
 
 **Skills** — all 18 skills in a 2-column grid with auto-calculated bonuses:
 - **Circle icon** (left of each card) — tap to cycle through None → Proficient → Expertise

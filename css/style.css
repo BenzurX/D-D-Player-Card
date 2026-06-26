@@ -2156,6 +2156,11 @@ html, body {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  /* Prevent grid items from overflowing their cells */
+  .pinned-list .pinned-row {
+    min-width: 0;
+  }
+
   /* Modal sheet: slightly wider */
   .sheet {
     max-width: 600px;

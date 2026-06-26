@@ -4,6 +4,17 @@ All notable changes to Combat Sheet are documented here.
 
 ---
 
+## [1.5] — 2026-06-26
+
+### Added
+- **PWA / Add to Home Screen** — added `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style`, and `mobile-web-app-capable` meta tags so the app runs full-screen (no URL bar) when added to the home screen on iOS or Android; fixed webmanifest icon paths
+- **Spellcasting stats on Explore tab** — Spell Modifier, Spell Attack, and Spell Save DC now appear as a three-card row below Passive Scores (visible only when a Spellcasting Ability is set); values auto-calculate from the ability score and proficiency bonus; tap any card to open an override sheet
+
+### Fixed
+- **Desktop 2-column pinned row overflow** — right-column pinned rows were overflowing their grid cells (caps clipped by the container edge); fixed by preventing grid item minimum-content-size from forcing columns wider than 1fr
+
+---
+
 ## [1.4] — 2026-06-26
 
 ### Added
