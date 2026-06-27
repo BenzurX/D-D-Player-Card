@@ -4,6 +4,13 @@ All notable changes to Combat Sheet are documented here.
 
 ---
 
+## [2.0] — 2026-06-26
+
+### Changed
+- **Attacks/round visual indicator** — the "N Attacks/round" text badge in the Pinned Actions header is replaced with N sword pip icons (one icon per attack, up to 4); 5+ attacks show a single sword with a ×N multiplier
+
+---
+
 ## [1.9] — 2026-06-26
 
 ### Added
