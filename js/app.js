@@ -1206,6 +1206,36 @@ function renderActTab() {
 
   // Spell slots — only shown when character has a spellcasting ability set
   const hasSpellAbility = c && c.spellAbility && c.spellAbility !== 'none';
+
+  // Spell stats (Mod / Attack / Save DC) — mirrors Explore tab computation
+  const spellAbKey  = hasSpellAbility ? c.spellAbility : null;
+  const spellModVal = spellAbKey ? getAbilityMod(c[spellAbKey] || 10) : null;
+  const profBonAct  = parseInt((c && c.prof) || '+2') || 2;
+  const spellOvrAct = (c && c.spellStats) || {};
+  const dispSpMod   = spellOvrAct.modOverride    != null ? spellOvrAct.modOverride    : spellModVal;
+  const dispSpAtk   = spellOvrAct.attackOverride != null ? spellOvrAct.attackOverride : (spellModVal !== null ? profBonAct + spellModVal : null);
+  const dispSpDC    = spellOvrAct.dcOverride     != null ? spellOvrAct.dcOverride     : (spellModVal !== null ? 8 + profBonAct + spellModVal : null);
+  const fmtSpAct    = v => v !== null && v !== undefined ? (v >= 0 ? '+' : '') + v : '—';
+  const spellStatsHTML = hasSpellAbility ? `
+    <div class="section-hdr section-gap">Spellcasting</div>
+    <div class="passive-row" id="actSpellStatsRow">
+      <div class="passive-card tappable">
+        <div class="passive-top"><i class="ti ti-sparkles c-purple passive-icon"></i><div class="passive-val${spellOvrAct.modOverride != null ? ' is-override' : ''}">${fmtSpAct(dispSpMod)}</div></div>
+        <span class="passive-dots"></span>
+        <div class="passive-label">Spell Mod</div>
+      </div>
+      <div class="passive-card tappable">
+        <div class="passive-top"><i class="ti ti-wand c-purple passive-icon"></i><div class="passive-val${spellOvrAct.attackOverride != null ? ' is-override' : ''}">${fmtSpAct(dispSpAtk)}</div></div>
+        <span class="passive-dots"></span>
+        <div class="passive-label">Spell Attack</div>
+      </div>
+      <div class="passive-card tappable">
+        <div class="passive-top"><i class="ti ti-shield-bolt c-purple passive-icon"></i><div class="passive-val${spellOvrAct.dcOverride != null ? ' is-override' : ''}">${dispSpDC !== null ? dispSpDC : '—'}</div></div>
+        <span class="passive-dots"></span>
+        <div class="passive-label">Save DC</div>
+      </div>
+    </div>` : '';
+
   const slots = (c && c.spellSlots) || {};
   const activeSlots = SLOT_ORDINALS
     .map((ord, i) => ({ ord, level: i + 1, max: 0, used: 0, ...(slots[i + 1] || {}) }))
@@ -1238,13 +1268,14 @@ function renderActTab() {
   const attacks  = (c && c.attacksPerRound) || 1;
   const slotsVisible = hasSpellAbility && activeSlots.length > 0;
   const hasAbove = standardTurn.length || slotsVisible || hasAnyAbilities;
-  const hasActiveTurn = slotsVisible || standardTurn.length > 0;
+  const hasActiveTurn = slotsVisible || standardTurn.length > 0 || hasSpellAbility;
 
   const activeTurnHTML = hasActiveTurn ? `
     <div class="active-turn-block">
       ${standardTurn.length ? `
         <div class="section-hdr section-hdr-row section-hdr-turn"><span>Pinned Actions</span><span class="attacks-badge">${attacks} ${attacks === 1 ? 'Attack' : 'Attacks'}/round <i class="ti ti-sword"></i></span></div>
         <div class="pinned-list" id="standard-turn-list">${standardTurn.map(r => pinnedRowHTML(r, true)).join('')}</div>` : ''}
+      ${spellStatsHTML}
       ${slotsHTML}
     </div>` : '';
 
@@ -1274,6 +1305,13 @@ function renderActTab() {
       <div class="act-btn extra-act" data-extra="utilize">   <i class="ti ti-tool            c-amber  cat-i"></i><div class="btn-text"><span class="btn-name">Utilize</span>   <span class="btn-desc">Use an Object</span></div></div>
     </div>
     <div class="project-link"><a href="https://github.com/BenzurX/D-D-Player-Card" target="_blank" rel="noopener"><i class="ti ti-brand-github"></i> Learn more about this project</a></div>`;
+
+  if (hasSpellAbility) {
+    const actSpellRow = tab.querySelector('#actSpellStatsRow');
+    if (actSpellRow) actSpellRow.querySelectorAll('.passive-card').forEach(card => {
+      card.addEventListener('click', () => openSpellStatsSheet());
+    });
+  }
 
   tab.querySelectorAll('.act-btn:not(.extra-act)').forEach(btn => {
     btn.addEventListener('click', () => openAddSheet(btn.dataset.category + '_action', btn.dataset.category));

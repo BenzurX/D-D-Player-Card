@@ -33,7 +33,7 @@ To switch characters or create another, tap the avatar icon in the top-left corn
 ## Tabs
 
 ### Act
-**Pinned Actions** appear at the top for your most-used combat moves — pin any ability from its detail sheet to surface it here instantly during your turn. End caps on pinned cards are color-coded by type: **crimson** for Attack, **indigo** for Magic.
+**Pinned Actions** appear at the top for your most-used combat moves — pin any ability from its detail sheet to surface it here instantly during your turn. End caps on pinned cards are color-coded by type: **crimson** for Attack, **indigo** for Magic. If a Spellcasting Ability is set, **Spell Modifier**, **Spell Attack**, and **Save DC** cards appear below your pinned rows for quick reference; tap any to override the values.
 
 Tap any category button (Attack, Magic, Items, Features) to view your saved abilities for that action type. Tap a card to read the full description. Tap **+ Add** to create a new ability card. Features are categorized as **Feat**, **Origin**, or **Species** and display a type icon in the pinned list.
 

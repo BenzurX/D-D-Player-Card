@@ -4,6 +4,13 @@ All notable changes to Combat Sheet are documented here.
 
 ---
 
+## [1.9] — 2026-06-26
+
+### Added
+- **Spellcasting stats on Act tab** — Spell Modifier, Spell Attack, and Save DC cards now appear in the Pinned Actions block (below pinned rows, above Spell Slots) when a Spellcasting Ability is set; tap any card to open the override sheet
+
+---
+
 ## [1.8] — 2026-06-26
 
 ### Added
