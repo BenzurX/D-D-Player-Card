@@ -265,6 +265,7 @@ html, body {
   display: flex;
   flex-direction: column;
   animation: slideUp 0.22s ease-out;
+  transition: transform 0.2s ease;
 }
 
 @keyframes slideUp {
@@ -279,6 +280,14 @@ html, body {
   border-radius: 2px;
   margin: 12px auto 0;
   flex-shrink: 0;
+  cursor: grab;
+  touch-action: none;
+  position: relative;
+}
+.sheet-handle::before {
+  content: '';
+  position: absolute;
+  inset: -14px -40px;
 }
 
 .sheet-header {

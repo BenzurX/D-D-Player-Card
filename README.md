@@ -13,6 +13,7 @@ A mobile-first D&D quick-reference companion designed for use at the table. No i
 - **Defend tab** — AC display, resistances/immunities, and Saving Throw bonuses
 - **Explore tab** — character traits, passive scores, and a full Skills list with auto-calculated bonuses
 - **Persistent storage** — everything saves automatically to your browser's localStorage; no account or server needed
+- **Drag-to-dismiss** — on mobile, drag the handle bar at the top of any sheet downward to close it
 
 ---
 

@@ -4,6 +4,13 @@ All notable changes to Combat Sheet are documented here.
 
 ---
 
+## [1.8] — 2026-06-26
+
+### Added
+- **Drag-to-dismiss sheets** — on mobile, drag the handle bar downward to close any sheet overlay; release past 120 px to dismiss, release early to snap back
+
+---
+
 ## [1.7] — 2026-06-26
 
 ### Fixed

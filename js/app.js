@@ -2608,6 +2608,41 @@ document.querySelectorAll('.overlay').forEach(overlay => {
 
 document.getElementById('sheetClose').addEventListener('click', () => closeOverlay('overlay'));
 
+// ── DRAG-TO-DISMISS (mobile sheet handles) ────────────────────
+document.querySelectorAll('.sheet-handle').forEach(handle => {
+  const sheet   = handle.closest('.sheet');
+  const overlay = handle.closest('.overlay');
+  if (!sheet || !overlay) return;
+
+  let startY = 0;
+  let dragging = false;
+
+  handle.addEventListener('touchstart', e => {
+    startY   = e.touches[0].clientY;
+    dragging = true;
+    sheet.style.transition = 'none';
+  }, { passive: true });
+
+  handle.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    const dy = Math.max(0, e.touches[0].clientY - startY);
+    sheet.style.transform = `translateY(${dy}px)`;
+  }, { passive: true });
+
+  handle.addEventListener('touchend', e => {
+    if (!dragging) return;
+    dragging = false;
+    sheet.style.transition = '';
+    const dy = e.changedTouches[0].clientY - startY;
+    if (dy > 120) {
+      sheet.style.transform = '';
+      closeOverlay(overlay.id);
+    } else {
+      sheet.style.transform = '';
+    }
+  });
+});
+
 // ── ADD BUTTONS (simple tabs) ─────────────────────────────────
 document.querySelectorAll('.add-btn[data-tab]').forEach(btn => {
   btn.addEventListener('click', () => openAddSheet(btn.dataset.tab, btn.dataset.tab));
