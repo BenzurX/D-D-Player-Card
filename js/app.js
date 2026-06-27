@@ -2614,33 +2614,40 @@ document.querySelectorAll('.sheet-handle').forEach(handle => {
   const overlay = handle.closest('.overlay');
   if (!sheet || !overlay) return;
 
-  let startY = 0;
-  let dragging = false;
+  let startY    = 0;
+  let active    = false;
 
-  handle.addEventListener('touchstart', e => {
-    startY   = e.touches[0].clientY;
-    dragging = true;
-    sheet.style.transition = 'none';
-  }, { passive: true });
-
-  handle.addEventListener('touchmove', e => {
-    if (!dragging) return;
-    const dy = Math.max(0, e.touches[0].clientY - startY);
+  function onMove(e) {
+    if (!active) return;
+    e.preventDefault();
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const dy = Math.max(0, clientY - startY);
     sheet.style.transform = `translateY(${dy}px)`;
-  }, { passive: true });
+  }
 
-  handle.addEventListener('touchend', e => {
-    if (!dragging) return;
-    dragging = false;
+  function onEnd(e) {
+    if (!active) return;
+    active = false;
+    document.removeEventListener('touchmove', onMove);
+    document.removeEventListener('touchend',  onEnd);
     sheet.style.transition = '';
-    const dy = e.changedTouches[0].clientY - startY;
+    const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+    const dy = clientY - startY;
     if (dy > 120) {
       sheet.style.transform = '';
       closeOverlay(overlay.id);
     } else {
       sheet.style.transform = '';
     }
-  });
+  }
+
+  handle.addEventListener('touchstart', e => {
+    startY = e.touches[0].clientY;
+    active = true;
+    sheet.style.transition = 'none';
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend',  onEnd);
+  }, { passive: true });
 });
 
 // ── ADD BUTTONS (simple tabs) ─────────────────────────────────
