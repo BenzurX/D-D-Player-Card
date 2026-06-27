@@ -14,6 +14,7 @@ A mobile-first D&D quick-reference companion designed for use at the table. No i
 - **Explore tab** — character traits, passive scores, and a full Skills list with auto-calculated bonuses
 - **Persistent storage** — everything saves automatically to your browser's localStorage; no account or server needed
 - **Drag-to-dismiss** — on mobile, drag the handle bar at the top of any sheet downward to close it
+- **Auto-updating PWA** — the installed Android app updates automatically on next launch whenever new changes are pushed; no reinstall needed
 
 ---
 

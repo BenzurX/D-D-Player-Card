@@ -4,6 +4,13 @@ All notable changes to Combat Sheet are documented here.
 
 ---
 
+## [2.1] — 2026-06-26
+
+### Added
+- **Service Worker / PWA auto-update** — `sw.js` caches all app assets on first install and clears stale caches on update; bumping the cache version string in `sw.js` with each push causes installed Android PWAs to update automatically on next launch without reinstalling
+
+---
+
 ## [2.0] — 2026-06-26
 
 ### Changed
