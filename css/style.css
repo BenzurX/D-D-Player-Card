@@ -163,9 +163,7 @@ html, body {
 .section-gap { margin-top: 16px; }
 .section-hdr-row { display: flex; align-items: center; justify-content: space-between; }
 .section-hdr-turn { color: var(--ink-mid); }
-.attacks-badge { display: flex; align-items: center; gap: 3px; color: var(--amber); }
-.attacks-badge .ti-sword { font-size: 18px; line-height: 1; }
-.attacks-multiplier { font-family: 'Crimson Text', serif; font-size: var(--text-sm); font-weight: 700; color: var(--amber); line-height: 1; }
+.attacks-badge { font-family: 'Crimson Text', serif; font-size: var(--text-xs); font-weight: 600; color: var(--ink-mid); letter-spacing: 0; text-transform: none; }
 
 
 /* ── ACTION BUTTON GRID ─────────────────────────────────────── */

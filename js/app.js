@@ -1273,7 +1273,7 @@ function renderActTab() {
   const activeTurnHTML = hasActiveTurn ? `
     <div class="active-turn-block">
       ${standardTurn.length ? `
-        <div class="section-hdr section-hdr-row section-hdr-turn"><span>Pinned Actions</span><span class="attacks-badge">${attacks > 4 ? `<i class="ti ti-sword"></i><span class="attacks-multiplier">×${attacks}</span>` : Array.from({length: attacks}, () => `<i class="ti ti-sword"></i>`).join('')}</span></div>
+        <div class="section-hdr section-hdr-row section-hdr-turn"><span>Pinned Actions</span><span class="attacks-badge">${attacks} ${attacks === 1 ? 'Attack' : 'Attacks'}/round <i class="ti ti-sword"></i></span></div>
         <div class="pinned-list" id="standard-turn-list">${standardTurn.map(r => pinnedRowHTML(r, true)).join('')}</div>` : ''}
       ${spellStatsHTML}
       ${slotsHTML}
