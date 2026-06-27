@@ -4,6 +4,13 @@ All notable changes to Combat Sheet are documented here.
 
 ---
 
+## [2.0] — 2026-06-26
+
+### Changed
+- **Pinned abilities hidden from All Abilities list** — abilities pinned to the Pinned Actions block no longer appear in the All Abilities list below; unpinning an ability moves it back down
+
+---
+
 ## [1.9] — 2026-06-26
 
 ### Added

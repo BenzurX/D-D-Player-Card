@@ -1056,8 +1056,8 @@ function renderActTab() {
     ALL_KEYS.forEach(key => {
       const cat = key.split('_')[0];
       (c.abilities[key] || []).forEach(a => {
-        allAbilities[cat].push({ a, key });
         if (a.pinned) standardTurn.push({ a, key });
+        else allAbilities[cat].push({ a, key });
       });
     });
 
