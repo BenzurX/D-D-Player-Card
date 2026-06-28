@@ -1,0 +1,165 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D&amp;D Player Card</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="../../favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../favicon/favicon-16x16.png">
+  <link rel="manifest" href="../../favicon/site.webmanifest">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="loading">
+  <div class="loading-inner">
+    <img src="../../images/d20-icon.svg" class="loading-icon" alt="">
+    <p class="loading-text">Loading...</p>
+  </div>
+</div>
+
+<!-- WELCOME SCREEN -->
+<div id="welcome">
+  <div class="welcome-inner">
+    <img src="../../images/d20-icon.svg" class="welcome-icon" alt="">
+    <h1 class="welcome-title">D&amp;D Player Card</h1>
+    <p class="welcome-sub">Your D&amp;D quick-reference companion.<br>Create your first character to get started.</p>
+    <button class="welcome-btn" id="welcomeCreate"><i class="ti ti-plus"></i> Create Character</button>
+    <a class="welcome-learn" href="https://github.com/BenzurX/D-D-Player-Card" target="_blank" rel="noopener"><i class="ti ti-brand-github"></i> Learn more about this project</a>
+  </div>
+</div>
+
+<!-- NEW CHARACTER SHEET -->
+<div class="overlay" id="newCharOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title"><i class="ti ti-user-plus c-gold"></i> New Character</div>
+      <button class="sheet-close" id="newCharClose" aria-label="Close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="sheet-body" id="newCharBody"></div>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
+
+  <!-- HEADER -->
+  <div id="header">
+    <div class="avatar" id="avatarBtn" aria-label="Switch character">
+      <i class="ti ti-user"></i>
+    </div>
+    <div class="char-info">
+      <div class="char-name" id="charName"></div>
+      <div class="char-sub"  id="charSub"></div>
+    </div>
+    <button class="header-chevron" aria-label="View character summary"><i class="ti ti-chevron-down"></i></button>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div id="content">
+
+    <!-- ACT TAB -->
+    <div class="tab-panel active" id="tab-act"></div>
+
+    <!-- REACTION TAB -->
+    <div class="tab-panel" id="tab-reaction">
+      <div class="section-hdr">Reactions</div>
+      <div id="reactionList"></div>
+      <button class="add-btn" data-tab="reaction"><i class="ti ti-plus"></i> Add Reaction</button>
+      <div class="project-link"><a href="https://github.com/BenzurX/D-D-Player-Card" target="_blank" rel="noopener"><i class="ti ti-brand-github"></i> Learn more about this project</a></div>
+    </div>
+
+    <!-- DEFENSE TAB -->
+    <div class="tab-panel" id="tab-defense"></div>
+
+    <!-- EXPLORE TAB -->
+    <div class="tab-panel" id="tab-explore"></div>
+
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav id="nav">
+    <button class="nav-tab active" data-tab="act">
+      <i class="ti ti-hand-finger"></i><div class="nl">Act</div>
+    </button>
+    <button class="nav-tab" data-tab="reaction">
+      <i class="ti ti-bolt"></i><div class="nl">React</div>
+    </button>
+    <button class="nav-tab" data-tab="defense">
+      <i class="ti ti-shield-half"></i><div class="nl">Defend</div>
+    </button>
+    <button class="nav-tab" data-tab="explore">
+      <i class="ti ti-map-search"></i><div class="nl">Explore</div>
+    </button>
+  </nav>
+
+</div>
+
+<!-- ABILITY SHEET -->
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title" id="sheetTitle"></div>
+      <div class="sheet-header-actions">
+        <button class="sheet-pin" id="sheetPin" aria-label="Pin to top" style="display:none;"><i class="ti ti-pin"></i></button>
+        <button class="sheet-close" id="sheetClose" aria-label="Close"><i class="ti ti-x"></i></button>
+      </div>
+    </div>
+    <div class="sheet-body" id="sheetBody"></div>
+  </div>
+</div>
+
+<!-- STAT EDIT SHEET -->
+<div class="overlay" id="statOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title"><i class="ti ti-user c-gold"></i> Character Stats</div>
+      <button class="sheet-close" id="statClose" aria-label="Close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="sheet-body" id="statBody"></div>
+  </div>
+</div>
+
+<!-- CHARACTER SWITCHER SHEET -->
+<div class="overlay" id="charOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title"><i class="ti ti-users c-gold"></i> Characters</div>
+      <button class="sheet-close" id="charClose" aria-label="Close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="sheet-body" id="charBody"></div>
+  </div>
+</div>
+
+<!-- HERO SUMMARY SHEET -->
+<div class="overlay" id="heroOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title"><i class="ti ti-user c-gold"></i> Hero</div>
+      <button class="sheet-close" id="heroClose" aria-label="Close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="sheet-body" id="heroBody"></div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="js/app.js"></script>
+
+</body>
+</html>
