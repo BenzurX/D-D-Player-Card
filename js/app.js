@@ -1,6 +1,8 @@
 // ── STATE ─────────────────────────────────────────────────────
 let characters    = JSON.parse(localStorage.getItem('dnd_characters') || 'null') || [];
 let currentCharId = localStorage.getItem('dnd_current_char') || null;
+let draggingHp    = false;
+let hpDragCallback = null;
 
 function esc(str) {
   return String(str == null ? '' : str)
@@ -15,6 +17,13 @@ function currentChar() {
 function save() {
   localStorage.setItem('dnd_characters', JSON.stringify(characters));
   localStorage.setItem('dnd_current_char', currentCharId || '');
+}
+
+function hpColorByPct(pct) {
+  if (pct > 0.75) return '#2d8a3e';
+  if (pct > 0.50) return '#c4a000';
+  if (pct > 0.25) return '#d47800';
+  return '#8b1a1a';
 }
 
 // ── OPEN5E SPELL LOOKUP ───────────────────────────────────────
@@ -868,6 +877,7 @@ function openNewCharSheet(fromWelcome) {
       cls:   cls   || '',
       species: species || '',
       hp, ac, speed, prof,
+      currentHp: hp,
       str, dex, con, int: intScore, wis, cha,
       skills: blankSkills(),
       skillAdv: {},
@@ -877,6 +887,7 @@ function openNewCharSheet(fromWelcome) {
       vulnerabilities: [],
       abilities: blankAbilities(),
       spellSlots: blankSpellSlots(),
+      deathSaves: { successes: [false, false, false], failures: [false, false, false] },
     });
     currentCharId = id;
     save();
@@ -1243,7 +1254,7 @@ function renderActTab() {
 
   const anySlotUsed = activeSlots.some(s => s.used > 0);
   const slotsHTML = (hasSpellAbility && activeSlots.length) ? `
-    <div class="section-hdr${standardTurn.length ? ' section-gap' : ''} section-hdr-row section-hdr-turn"><span>Spell Slots</span><button class="long-rest-btn${anySlotUsed ? ' slots-active' : ''}" id="longRestBtn"><i class="ti ${anySlotUsed ? 'ti-moon-filled' : 'ti-moon'}"></i></button></div>
+    <div class="section-hdr${standardTurn.length ? ' section-gap' : ''} section-hdr-row section-hdr-turn"><span>Spell Slots</span><button class="long-rest-btn${anySlotUsed ? ' slots-active' : ''}" id="longRestBtn"><span class="long-rest-label">Long Rest</span><span class="long-rest-moon"><i class="ti ti-moon long-rest-moon-out"></i><i class="ti ti-moon-filled long-rest-moon-fill"></i></span></button></div>
     <div class="slot-tracker">
       ${activeSlots.map(s => {
         const pips = Array.from({ length: s.max }, (_, i) => {
@@ -1270,21 +1281,65 @@ function renderActTab() {
   const hasAbove = standardTurn.length || slotsVisible || hasAnyAbilities;
   const hasActiveTurn = slotsVisible || standardTurn.length > 0 || hasSpellAbility;
 
-  const activeTurnHTML = hasActiveTurn ? `
+  const hpMax = parseInt(c && c.hp) || 0;
+  if (c && c.currentHp === undefined) { c.currentHp = hpMax; save(); }
+  const initHp = c ? Math.max(0, Math.min(hpMax, c.currentHp ?? hpMax)) : 0;
+  if (c && !c.deathSaves) { c.deathSaves = { successes: [false, false, false], failures: [false, false, false] }; save(); }
+  const ds = (c && c.deathSaves) || { successes: [false, false, false], failures: [false, false, false] };
+
+  const deathSavesHTML = hpMax > 0 ? `
+    <div class="ds-section${initHp > 0 ? ' ds-hidden' : ''}" id="dsSection">
+      <div class="section-hdr section-gap">Death Saving Throws</div>
+      <div class="ds-cols">
+        <div class="ds-col ds-fai-col">
+          <div class="ds-col-label">Failures</div>
+          <div class="ds-icons">
+            <div class="ds-icon ds-fai-icon${ds.failures[0] ? ' filled' : ''}" data-ds-type="failures" data-ds-idx="0"><i class="ti ti-skull"></i></div>
+            <div class="ds-icon ds-fai-icon${ds.failures[1] ? ' filled' : ''}" data-ds-type="failures" data-ds-idx="1"><i class="ti ti-skull"></i></div>
+            <div class="ds-icon ds-fai-icon${ds.failures[2] ? ' filled' : ''}" data-ds-type="failures" data-ds-idx="2"><i class="ti ti-skull"></i></div>
+          </div>
+        </div>
+        <div class="ds-col ds-suc-col">
+          <div class="ds-col-label">Successes</div>
+          <div class="ds-icons">
+            <div class="ds-icon ds-suc-icon${ds.successes[0] ? ' filled' : ''}" data-ds-type="successes" data-ds-idx="0"><i class="ti ti-heartbeat"></i></div>
+            <div class="ds-icon ds-suc-icon${ds.successes[1] ? ' filled' : ''}" data-ds-type="successes" data-ds-idx="1"><i class="ti ti-heartbeat"></i></div>
+            <div class="ds-icon ds-suc-icon${ds.successes[2] ? ' filled' : ''}" data-ds-type="successes" data-ds-idx="2"><i class="ti ti-heartbeat"></i></div>
+          </div>
+        </div>
+      </div>
+    </div>` : '';
+
+  const showActiveTurnBlock = hasActiveTurn || hpMax > 0;
+  const hpHTML = hpMax > 0 ? `
+    <div class="section-hdr${hasActiveTurn ? ' section-gap' : ''}"><i class="ti ti-heart c-red"></i> Hit Points</div>
+    <div class="hp-track-outer">
+      <div class="hp-track" id="hpTrack">
+        <div class="hp-fill" id="hpFill"></div>
+        <div class="hp-thumb" id="hpThumb">
+          <div class="hp-tooltip" id="hpTooltip"></div>
+          <span id="hpThumbNum"></span>
+        </div>
+      </div>
+    </div>` : '';
+
+  const activeTurnHTML = showActiveTurnBlock ? `
     <div class="active-turn-block">
       ${standardTurn.length ? `
-        <div class="section-hdr section-hdr-row section-hdr-turn"><span>Pinned Actions</span><span class="attacks-badge">${attacks} ${attacks === 1 ? 'Attack' : 'Attacks'}/round <i class="ti ti-sword"></i></span></div>
+        <div class="section-hdr section-hdr-row section-hdr-turn"><span>Pinned Actions</span><span class="attacks-hex" data-tooltip="${attacks} ${attacks === 1 ? 'Attack' : 'Attacks'}/round"><svg width="52" height="52" viewBox="0 0 48 48"><polygon points="24,4 42,14 42,34 24,44 6,34 6,14" fill="#1E1810" stroke="#C9A84C" stroke-width="1.5"/></svg><span class="attacks-hex-inner"><span class="attacks-hex-num">${attacks}</span><span class="attacks-hex-atk">ATK</span></span></span></div>
         <div class="pinned-list" id="standard-turn-list">${standardTurn.map(r => pinnedRowHTML(r, true)).join('')}</div>` : ''}
       ${spellStatsHTML}
       ${slotsHTML}
+      ${hpHTML}
+      ${deathSavesHTML}
     </div>` : '';
 
   tab.innerHTML = `
     ${activeTurnHTML}
     ${hasAnyAbilities ? `
-      <div class="section-hdr${hasActiveTurn ? ' section-gap' : ''}">All Abilities</div>
+      <div class="section-hdr${showActiveTurnBlock ? ' section-gap' : ''}">All Abilities</div>
       <div class="all-abilities-list">${allAbilitiesHTML}</div>` : ''}
-    <div class="section-hdr${hasAbove ? ' section-gap' : ''}">Actions / Bonus Actions</div>
+    <div class="section-hdr section-gap">Actions / Bonus Actions</div>
     <div class="btn-grid">
       <div class="act-btn" data-category="attack"  ><i class="ti ti-sword    c-red    cat-i"></i><div class="btn-text"><span class="btn-name">Attack</span>   <span class="btn-desc">Weapon Attacks</span></div></div>
       <div class="act-btn" data-category="magic"   ><i class="ti ti-wand     c-purple cat-i"></i><div class="btn-text"><span class="btn-name">Magic</span>    <span class="btn-desc">Spells &amp; Abilities</span></div></div>
@@ -1305,6 +1360,88 @@ function renderActTab() {
       <div class="act-btn extra-act" data-extra="utilize">   <i class="ti ti-tool            c-amber  cat-i"></i><div class="btn-text"><span class="btn-name">Utilize</span>   <span class="btn-desc">Use an Object</span></div></div>
     </div>
     <div class="project-link"><a href="https://github.com/BenzurX/D-D-Player-Card" target="_blank" rel="noopener"><i class="ti ti-brand-github"></i> Learn more about this project</a></div>`;
+
+  // HP Tracker wiring
+  {
+    const hpTrack    = document.getElementById('hpTrack');
+    const hpFill     = document.getElementById('hpFill');
+    const hpThumb    = document.getElementById('hpThumb');
+    const hpThumbNum = document.getElementById('hpThumbNum');
+    const hpTooltip  = document.getElementById('hpTooltip');
+
+    function setHpSlider(hp, persist) {
+      hp = Math.max(0, Math.min(hpMax, Math.round(hp)));
+      const pct = hpMax > 0 ? hp / hpMax : 0;
+      const col = hpColorByPct(pct);
+      hpFill.style.width        = (pct * 100) + '%';
+      hpFill.style.background   = col;
+      hpThumb.style.borderColor = col;
+      hpThumb.style.color       = col;
+      hpThumb.style.left        = (pct * 100) + '%';
+      hpThumbNum.textContent    = hp;
+      hpTooltip.textContent     = hp + ' HP';
+      if (persist && c) { c.currentHp = hp; save(); }
+      const dsSection = document.getElementById('dsSection');
+      if (dsSection) dsSection.classList.toggle('ds-hidden', hp > 0);
+    }
+
+    hpDragCallback = clientX => {
+      const r = hpTrack.getBoundingClientRect();
+      const hp = Math.round(Math.max(0, Math.min(1, (clientX - r.left) / r.width)) * hpMax);
+      setHpSlider(hp, true);
+    };
+
+    if (hpThumb && hpMax > 0) {
+      hpThumb.addEventListener('mousedown',  e => { draggingHp = true; hpThumb.classList.add('dragging'); e.preventDefault(); });
+      hpThumb.addEventListener('touchstart', e => { draggingHp = true; hpThumb.classList.add('dragging'); e.preventDefault(); }, { passive: false });
+      hpTrack.addEventListener('click', e => { if (!draggingHp) hpDragCallback(e.clientX); });
+      setHpSlider(initHp);
+    }
+  }
+
+  tab.querySelectorAll('[data-ds-idx]').forEach(icon => {
+    icon.addEventListener('click', () => {
+      if (!c) return;
+      if (!c.deathSaves) c.deathSaves = { successes: [false, false, false], failures: [false, false, false] };
+      const type = icon.dataset.dsType;
+      const i    = parseInt(icon.dataset.dsIdx);
+
+      if (type === 'successes') {
+        // left-to-right fill: click i fills 0..i
+        const count    = c.deathSaves.successes.filter(Boolean).length;
+        const newCount = i < count ? i : i + 1;
+        c.deathSaves.successes = [newCount > 0, newCount > 1, newCount > 2];
+      } else {
+        // right-to-left fill: click i=2 (rightmost) = 1st failure
+        const revI     = 2 - i;
+        const count    = c.deathSaves.failures.filter(Boolean).length;
+        const newCount = revI < count ? revI : revI + 1;
+        c.deathSaves.failures = [newCount > 2, newCount > 1, newCount > 0];
+      }
+
+      // Sync all icons without a full re-render
+      tab.querySelectorAll('[data-ds-type="successes"][data-ds-idx]').forEach(el => {
+        el.classList.toggle('filled', c.deathSaves.successes[parseInt(el.dataset.dsIdx)]);
+      });
+      tab.querySelectorAll('[data-ds-type="failures"][data-ds-idx]').forEach(el => {
+        el.classList.toggle('filled', c.deathSaves.failures[parseInt(el.dataset.dsIdx)]);
+      });
+
+      save();
+    });
+
+    icon.addEventListener('mouseenter', () => {
+      const type = icon.dataset.dsType;
+      const i    = parseInt(icon.dataset.dsIdx);
+      tab.querySelectorAll(`[data-ds-type="${type}"]`).forEach(el => {
+        const elIdx = parseInt(el.dataset.dsIdx);
+        el.classList.toggle('ds-preview', type === 'successes' ? elIdx <= i : elIdx >= i);
+      });
+    });
+    icon.addEventListener('mouseleave', () => {
+      tab.querySelectorAll('[data-ds-idx]').forEach(el => el.classList.remove('ds-preview'));
+    });
+  });
 
   if (hasSpellAbility) {
     const actSpellRow = tab.querySelector('#actSpellStatsRow');
@@ -1390,6 +1527,7 @@ function renderActTab() {
       if (!c) return;
       if (!c.spellSlots) c.spellSlots = blankSpellSlots();
       Object.values(c.spellSlots).forEach(s => { s.used = 0; });
+      c.currentHp = parseInt(c.hp) || 0;
       save();
       renderActTab();
     });
@@ -3121,7 +3259,11 @@ setTimeout(hideLoading, 1200);
     tip.innerHTML = tagTooltipText(el.dataset.tooltip);
     tip.style.display = 'block';
     const r = el.getBoundingClientRect();
-    tip.style.left = (r.left + r.width / 2) + 'px';
+    const MARGIN = 8;
+    const tipW = tip.offsetWidth;
+    const idealLeft = r.left + r.width / 2;
+    const clampedLeft = Math.max(MARGIN + tipW / 2, Math.min(window.innerWidth - MARGIN - tipW / 2, idealLeft));
+    tip.style.left = clampedLeft + 'px';
     tip.style.top  = (r.top - tip.offsetHeight - 10) + 'px';
     requestAnimationFrame(() => tip.style.opacity = '1');
   });
@@ -3136,6 +3278,26 @@ setTimeout(hideLoading, 1200);
     }, 150);
   });
 })();
+
+// ── HP TRACKER DOCUMENT LISTENERS ────────────────────────────
+document.addEventListener('mousemove', e => {
+  if (draggingHp && hpDragCallback) hpDragCallback(e.clientX);
+});
+document.addEventListener('touchmove', e => {
+  if (draggingHp && hpDragCallback) hpDragCallback(e.touches[0].clientX);
+}, { passive: false });
+document.addEventListener('mouseup', () => {
+  if (!draggingHp) return;
+  draggingHp = false;
+  const t = document.getElementById('hpThumb');
+  if (t) t.classList.remove('dragging');
+});
+document.addEventListener('touchend', () => {
+  if (!draggingHp) return;
+  draggingHp = false;
+  const t = document.getElementById('hpThumb');
+  if (t) t.classList.remove('dragging');
+});
 
 // ── WELCOME DIE INTERACTION ───────────────────────────────────
 (function () {

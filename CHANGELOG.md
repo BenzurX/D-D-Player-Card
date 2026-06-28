@@ -1,6 +1,26 @@
 # Changelog
 
-All notable changes to Combat Sheet are documented here.
+All notable changes to D&D Player Card are documented here.
+
+---
+
+## [2.3] — 2026-06-27
+
+### Added
+- **Filled spell slot hover effect** — mousing over a used (filled) spell slot pip now shows a visible purple glow, matching the empty-pip hover style
+
+### Changed
+- **Death save icons hug center divider** — Failure icons are right-aligned (closest to the divider), Successes are left-aligned, so clicking feels like moving outward from center in both directions
+- **Death save hover previews click result** — hovering a success icon highlights all icons from the left up to that index; hovering a failure icon highlights that icon and all icons to its right — exactly what will be filled on click (mirrors spell slot pip-preview behavior)
+
+---
+
+## [2.2] — 2026-06-27
+
+### Added
+- **HP Tracker** — draggable slider on the Act tab shows current HP with a color-coded fill (green → yellow → orange → red by percentage); drag the thumb or tap the track to set HP; tooltip shows exact value while dragging; current HP persists to localStorage
+- **Death Saving Throws** — section appears automatically when HP reaches 0; three Failure (skull) and three Success (heartbeat) icons; click to fill in count-based order (failures right-to-left, successes left-to-right); hides again when HP is restored above 0; saves persist to localStorage
+- **Long Rest button** — moon icon in the Spell Slots header resets all used spell slots; icon fills and turns purple on hover
 
 ---
 
