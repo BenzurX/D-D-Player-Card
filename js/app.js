@@ -1469,6 +1469,7 @@ function renderActTab() {
     let dragSrcId = null;
 
     listEl.querySelectorAll('.pinned-row').forEach(row => {
+      // ── Desktop drag ──────────────────────────────────────────
       row.addEventListener('dragstart', e => {
         dragSrcId = row.dataset.id;
         e.dataTransfer.effectAllowed = 'move';
@@ -1492,6 +1493,60 @@ function renderActTab() {
         listEl.insertBefore(srcEl, row);
         c[orderKey] = [...listEl.querySelectorAll('.pinned-row')].map(r => r.dataset.id);
         save();
+      });
+
+      // ── Mobile touch drag (handle only) ──────────────────────
+      const handle = row.querySelector('.pinned-drag-handle');
+      if (!handle) return;
+
+      let ghost = null, touchOffsetX = 0, touchOffsetY = 0, activeTarget = null;
+
+      handle.addEventListener('touchstart', e => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect  = row.getBoundingClientRect();
+        touchOffsetX = touch.clientX - rect.left;
+        touchOffsetY = touch.clientY - rect.top;
+
+        ghost = row.cloneNode(true);
+        ghost.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;`
+          + `width:${rect.width}px;opacity:0.88;pointer-events:none;z-index:9999;`
+          + `box-shadow:0 6px 24px rgba(0,0,0,0.45);transform:scale(1.03);border-radius:12px;`;
+        document.body.appendChild(ghost);
+        row.classList.add('dragging');
+        activeTarget = null;
+      }, { passive: false });
+
+      handle.addEventListener('touchmove', e => {
+        if (!ghost) return;
+        e.preventDefault();
+        const touch = e.touches[0];
+        ghost.style.left = (touch.clientX - touchOffsetX) + 'px';
+        ghost.style.top  = (touch.clientY - touchOffsetY) + 'px';
+
+        ghost.style.visibility = 'hidden';
+        const el = document.elementFromPoint(touch.clientX, touch.clientY);
+        ghost.style.visibility = '';
+        const overRow = el ? el.closest('.pinned-row') : null;
+
+        listEl.querySelectorAll('.pinned-row').forEach(r => r.classList.remove('drag-over'));
+        if (overRow && overRow !== row && listEl.contains(overRow)) {
+          overRow.classList.add('drag-over');
+          activeTarget = overRow;
+        } else {
+          activeTarget = null;
+        }
+      }, { passive: false });
+
+      handle.addEventListener('touchend', () => {
+        if (ghost) { ghost.remove(); ghost = null; }
+        listEl.querySelectorAll('.pinned-row').forEach(r => r.classList.remove('dragging', 'drag-over'));
+        if (activeTarget && activeTarget !== row) {
+          listEl.insertBefore(row, activeTarget);
+          c[orderKey] = [...listEl.querySelectorAll('.pinned-row')].map(r => r.dataset.id);
+          save();
+        }
+        activeTarget = null;
       });
     });
   }
@@ -3202,7 +3257,6 @@ function stripCharDefaults(c) {
 
   if (c.pinnedActions && c.pinnedActions.length) out.pinnedActions = c.pinnedActions;
   if (c.pinnedBonus   && c.pinnedBonus.length)   out.pinnedBonus   = c.pinnedBonus;
-  if (c.avatar) out.avatar = c.avatar;
 
   return out;
 }

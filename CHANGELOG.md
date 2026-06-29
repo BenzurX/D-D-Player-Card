@@ -4,6 +4,16 @@ All notable changes to D&D Player Card are documented here.
 
 ---
 
+## [2.5] — 2026-06-29
+
+### Added
+- **Touch drag-to-reorder pinned actions** — on mobile, press and drag the grip handle (≡) on any pinned row to reorder; a floating ghost follows the finger and snaps into position on release; order persists to localStorage
+
+### Changed
+- **Grip handle always visible on touch devices** — on mobile the grip icon replaces the category icon permanently (no hover needed to reveal it)
+
+---
+
 ## [2.4] — 2026-06-29
 
 ### Added

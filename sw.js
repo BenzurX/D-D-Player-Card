@@ -1,4 +1,4 @@
-const CACHE = 'dnd-player-card-v3';
+const CACHE = 'dnd-player-card-v4';
 
 const ASSETS = [
   './',

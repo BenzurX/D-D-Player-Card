@@ -1443,6 +1443,10 @@ html, body {
 .pinned-row:hover .pinned-icon { display: none; }
 .pinned-row.dragging { opacity: 0.35; }
 .pinned-row.drag-over { outline: 2px solid var(--gold); outline-offset: 2px; }
+@media (hover: none) {
+  .pinned-drag-handle { display: block; }
+  .pinned-icon { display: none; }
+}
 
 /* ── CAP CATEGORY COLORS ─────────────────────────────────────── */
 .cap-cat-attack { background: #3D1010; }
