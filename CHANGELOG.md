@@ -4,7 +4,7 @@ All notable changes to D&D Player Card are documented here.
 
 ---
 
-## [2.5] — 2026-06-29
+## [0.25] — 2026-06-29
 
 ### Added
 - **Touch drag-to-reorder pinned actions** — on mobile, press and drag the grip handle (≡) on any pinned row to reorder; a floating ghost follows the finger and snaps into position on release; order persists to localStorage
@@ -14,7 +14,7 @@ All notable changes to D&D Player Card are documented here.
 
 ---
 
-## [2.4] — 2026-06-29
+## [0.24] — 2026-06-29
 
 ### Added
 - **Character Import/Export** — export any character as a compact shareable code from the Characters panel (tap the file-export icon on any character row); paste the code on another device using **Import Character** to instantly recreate the character with all stats, abilities, and settings intact. Codes are LZ-compressed and validated on import to reject malformed data
@@ -22,7 +22,7 @@ All notable changes to D&D Player Card are documented here.
 
 ---
 
-## [2.3] — 2026-06-27
+## [0.23] — 2026-06-27
 
 ### Added
 - **Filled spell slot hover effect** — mousing over a used (filled) spell slot pip now shows a visible purple glow, matching the empty-pip hover style
@@ -33,7 +33,7 @@ All notable changes to D&D Player Card are documented here.
 
 ---
 
-## [2.2] — 2026-06-27
+## [0.22] — 2026-06-27
 
 ### Added
 - **HP Tracker** — draggable slider on the Act tab shows current HP with a color-coded fill (green → yellow → orange → red by percentage); drag the thumb or tap the track to set HP; tooltip shows exact value while dragging; current HP persists to localStorage
@@ -42,49 +42,49 @@ All notable changes to D&D Player Card are documented here.
 
 ---
 
-## [2.1] — 2026-06-26
+## [0.21] — 2026-06-26
 
 ### Added
 - **Service Worker / PWA auto-update** — `sw.js` caches all app assets on first install and clears stale caches on update; bumping the cache version string in `sw.js` with each push causes installed Android PWAs to update automatically on next launch without reinstalling
 
 ---
 
-## [2.0] — 2026-06-26
+## [0.20] — 2026-06-26
 
 ### Changed
 - **Pinned abilities hidden from All Abilities list** — abilities pinned to the Pinned Actions block no longer appear in the All Abilities list below; unpinning an ability moves it back down
 
 ---
 
-## [1.9] — 2026-06-26
+## [0.19] — 2026-06-26
 
 ### Added
 - **Spellcasting stats on Act tab** — Spell Modifier, Spell Attack, and Save DC cards now appear in the Pinned Actions block (below pinned rows, above Spell Slots) when a Spellcasting Ability is set; tap any card to open the override sheet
 
 ---
 
-## [1.8] — 2026-06-26
+## [0.18] — 2026-06-26
 
 ### Added
 - **Drag-to-dismiss sheets** — on mobile, drag the handle bar downward to close any sheet overlay; release past 120 px to dismiss, release early to snap back
 
 ---
 
-## [1.7] — 2026-06-26
+## [0.17] — 2026-06-26
 
 ### Fixed
 - **Edit sheet scroll position** — opening an ability edit/detail sheet now always resets to the top; previously the sheet could open scrolled to the bottom when the prior content was longer
 
 ---
 
-## [1.6] — 2026-06-26
+## [0.16] — 2026-06-26
 
 ### Changed
 - **Saving Throws — single column on mobile** — the six saving throw rows now stack in a single column on mobile (was 2 columns); 2 columns restored on tablet+
 
 ---
 
-## [1.5] — 2026-06-26
+## [0.15] — 2026-06-26
 
 ### Added
 - **PWA / Add to Home Screen** — added `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style`, and `mobile-web-app-capable` meta tags so the app runs full-screen (no URL bar) when added to the home screen on iOS or Android; fixed webmanifest icon paths
@@ -95,7 +95,7 @@ All notable changes to D&D Player Card are documented here.
 
 ---
 
-## [1.4] — 2026-06-26
+## [0.14] — 2026-06-26
 
 ### Added
 - **Category-colored end caps** — Attack caps are deep crimson; Magic caps are dark indigo. Text color adapts to each dark background (light rose for attack, light lavender for magic)
@@ -103,7 +103,7 @@ All notable changes to D&D Player Card are documented here.
 
 ---
 
-## [1.3] — 2026-06-26
+## [0.13] — 2026-06-26
 
 ### Changed
 - **Spellcasting Ability** — "None" label replaces "—" in the segmented control for clarity
@@ -119,7 +119,7 @@ All notable changes to D&D Player Card are documented here.
 
 ---
 
-## [1.2] — 2026-06-26
+## [0.12] — 2026-06-26
 
 ### Changed
 - **Character Stats auto-save on blur** — every text/number input in the Character Stats editor now auto-saves when you click away, without needing to press Save. The Save button still works and also closes the overlay; Cancel closes without committing unsaved segmented-control changes.
@@ -129,7 +129,7 @@ All notable changes to D&D Player Card are documented here.
 
 ---
 
-## [1.1] — 2026-06-26
+## [0.11] — 2026-06-26
 
 ### Changed
 - **Defense summary box** — Resistances, Immunities, and Vulnerabilities sections now always visible (no longer hidden when empty); labels show full terms; icons added to each label; inline **+ Add** pill button at end of each tag row
@@ -137,7 +137,7 @@ All notable changes to D&D Player Card are documented here.
 
 ---
 
-## [1.0] — 2026-06-26
+## [0.10] — 2026-06-26
 
 ### Added
 - **Vulnerabilities section** — new section in the Defend tab (alongside Resistances and Immunities) with red `shield-down` icon; supports add/edit/delete the same way as the others
@@ -153,7 +153,7 @@ All notable changes to D&D Player Card are documented here.
 
 ---
 
-## [0.9] — 2026-06-26
+## [0.09] — 2026-06-26
 
 ### Added
 - **Ability icons in check/save tags** — skill check and saving throw inline tags now show the governing ability icon (color-coded) after the bonus number, so STR/DEX/etc. is instantly identifiable at a glance
@@ -182,7 +182,7 @@ All notable changes to D&D Player Card are documented here.
 
 ---
 
-## [0.8] — 2026-06-25
+## [0.08] — 2026-06-25
 
 ### Added
 - **Bonus Damage field** on attack ability cards — optional second damage entry (e.g. `1d4 radiant`) shown as a `+ damage2` chip on the ability card and a stacked line in the pinned card end cap
@@ -196,7 +196,7 @@ All notable changes to D&D Player Card are documented here.
 
 ---
 
-## [0.7] — 2026-06-25
+## [0.07] — 2026-06-25
 
 ### Added
 - **Responsive layout** — app now adapts across mobile, tablet, and desktop
@@ -208,7 +208,7 @@ All notable changes to D&D Player Card are documented here.
 
 ---
 
-## [0.6] — 2026-06-25
+## [0.06] — 2026-06-25
 
 ### Added
 - Gold D20 icon on loading and splash screen (was light tan)
@@ -227,7 +227,7 @@ All notable changes to D&D Player Card are documented here.
 
 ---
 
-## [0.5] — 2026-06-25
+## [0.05] — 2026-06-25
 _Commit: `1a9e5c8` — redesign Explore Character section; remove Size card from Defend tab_
 
 ### Added
@@ -244,7 +244,7 @@ _Commit: `1a9e5c8` — redesign Explore Character section; remove Size card from
 
 ---
 
-## [0.4] — 2026-06-25
+## [0.04] — 2026-06-25
 _Commit: `5ecb77e` — add proficiency segmented controls to skill and saving throw popovers_
 
 ### Added
@@ -254,7 +254,7 @@ _Commit: `5ecb77e` — add proficiency segmented controls to skill and saving th
 
 ---
 
-## [0.3] — 2026-06-25
+## [0.03] — 2026-06-25
 _Commit: `9620868` — large scale UI/UX changes_
 
 ### Added
@@ -269,7 +269,7 @@ _Commit: `9620868` — large scale UI/UX changes_
 
 ---
 
-## [0.2] — 2026-06-25
+## [0.02] — 2026-06-25
 _Commits: `cc34bdf`, `2f29657` — README_
 
 ### Added
@@ -277,7 +277,7 @@ _Commits: `cc34bdf`, `2f29657` — README_
 
 ---
 
-## [0.1] — 2026-06-24
+## [0.01] — 2026-06-24
 _Commit: `90c03a1` — initial commit_
 
 ### Added
