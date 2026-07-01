@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Explore Tab — Rework Ideas (#13 · #16)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  :root{
+    --parchment:#F2E6C8; --parchment-mid:#E8D8A8; --parchment-drk:#D4C080;
+    --ink:#2A1D12; --ink-mid:#5A3E28; --ink-faint:#8B6840;
+    --gold:#C8A030; --border:#C0A060;
+    --red:#9B3030; --purple:#5040A0; --green:#307050; --amber:#806020; --blue:#4A6080;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; padding:26px 16px 70px; background:#3D2B1F; font-family:'Crimson Text',Georgia,serif; color:var(--ink);}
+  h1{font-family:'Cinzel',serif; color:#F2E6C8; font-size:24px; text-align:center; margin:0 0 6px;}
+  .intro{color:#C9B896; text-align:center; max-width:720px; margin:0 auto 24px; font-size:16px; line-height:1.5;}
+  .idea-title{font-family:'Cinzel',serif; color:#F2E6C8; font-size:19px; max-width:1180px; margin:34px auto 4px; border-bottom:1px solid #6b5238; padding-bottom:6px;}
+  .idea-note{color:#C9B896; max-width:1180px; margin:0 auto 16px; font-size:15px; line-height:1.5;}
+  .frames{max-width:1180px; margin:0 auto; display:flex; gap:26px; flex-wrap:wrap; justify-content:center; align-items:flex-start;}
+  .device{display:flex; flex-direction:column; align-items:center; gap:8px;}
+  .device-tag{font-family:'Cinzel',serif; font-size:12px; letter-spacing:1px; text-transform:uppercase; color:#C9B896;}
+  .frame{
+    container-type:inline-size;
+    background:#EFE3C2; background-image:radial-gradient(circle at 30% 20%, #F5EACB, #E9DBB4);
+    border:1.5px solid var(--border); border-radius:20px; padding:16px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.4);
+  }
+  .frame.mobile{width:380px;}
+  .frame.tablet{width:720px;}
+
+  /* ── shared app-like components ─────────────────────────── */
+  .section-hdr{font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:1.5px; margin:0 0 10px; padding-bottom:6px; border-bottom:1.5px solid var(--border);}
+  .section-gap{margin-top:16px;}
+
+  .cols{display:flex; flex-direction:column; gap:0;}
+  .col{min-width:0;}
+
+  /* movement 2x2 */
+  .move-card{background:var(--parchment-mid); border:1px solid var(--border); border-radius:12px; padding:10px 12px;}
+  .move-2x2{display:grid; grid-template-columns:1fr 1fr; gap:8px 16px;}
+  .move-cell{display:flex; align-items:center; gap:7px; min-width:0;}
+  .move-cell i{font-size:20px; color:var(--blue); flex-shrink:0;}
+  .move-cell .mt{font-family:'Cinzel',serif; font-size:14px; color:var(--ink-mid); white-space:nowrap;}
+  .move-cell .md{flex:1; border-bottom:1.5px dashed rgba(192,160,96,.45); margin:0 2px; position:relative; top:5px; min-width:8px;}
+  .move-cell .mv{font-family:'Cinzel',serif; font-size:16px; font-weight:700; color:var(--ink); white-space:nowrap;}
+  .move-cell .mv.def{color:var(--amber);}
+
+  /* passive-style boxes */
+  .box-row{display:grid; gap:8px;}
+  .pbox{background:var(--parchment-mid); border:1px solid var(--border); border-radius:12px; padding:10px 8px; display:flex; flex-direction:column; align-items:center; gap:2px;}
+  .pbox .ptop{display:flex; align-items:center; gap:5px;}
+  .pbox .ptop i{font-size:22px;}
+  .pbox .pval{font-family:'Cinzel',serif; font-size:22px; font-weight:700; color:var(--ink); line-height:1;}
+  .pbox .plbl{font-family:'Cinzel',serif; font-size:12px; font-weight:600; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.4px; text-align:center; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .c-blue{color:var(--blue);} .c-green{color:var(--green);} .c-amber{color:var(--amber);} .c-purple{color:var(--purple);}
+
+  /* tag chips (languages / tools) */
+  .tags{display:flex; flex-wrap:wrap; gap:7px;}
+  .tag{font-family:'Cinzel',serif; font-size:13px; background:var(--parchment); border:1px solid var(--border); border-radius:16px; padding:5px 12px; color:var(--ink); display:inline-flex; align-items:center; gap:5px;}
+  .tag i{font-size:15px; color:var(--ink-faint);}
+  .tag-add{background:transparent; border:1px dashed var(--border); color:var(--ink-faint);}
+
+  .prof2{display:grid; grid-template-columns:1fr; gap:0;}
+
+  /* skills teaser */
+  .skills{display:grid; grid-template-columns:1fr; gap:6px;}
+  .srow{display:flex; align-items:center; gap:8px; background:var(--parchment-mid); border:1px solid var(--border); border-radius:10px; padding:7px 10px;}
+  .srow i.pt{font-size:18px; color:var(--gold);}
+  .srow .sn{font-family:'Cinzel',serif; font-size:14px; flex:1;}
+  .srow .sb{font-family:'Cinzel',serif; font-weight:700; color:var(--green);}
+
+  /* ── container-query responsive (mirrors the real app breakpoints) ── */
+  @container (min-width:600px){
+    .cols{flex-direction:row; gap:16px;}
+    .col{flex:1;}
+    .move-cell .md{display:block;}
+    .box-row.passive3{grid-template-columns:1fr 1fr 1fr;}
+    .box-row.passive4{grid-template-columns:1fr 1fr 1fr 1fr;}
+    .box-row.spell3{grid-template-columns:1fr 1fr 1fr;}
+    .prof2{grid-template-columns:1fr 1fr; gap:16px;}
+    .skills{grid-template-columns:1fr 1fr 1fr;}
+  }
+  @container (max-width:599px){
+    .box-row.passive3{grid-template-columns:1fr 1fr 1fr;}
+    .box-row.passive4{grid-template-columns:1fr 1fr;}
+    .box-row.spell3{grid-template-columns:1fr 1fr 1fr;}
+    .skills{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+  <h1>Explore Tab — Rework Ideas</h1>
+  <p class="intro">Changes #13 &amp; #16. Movement becomes a 2&times;2 grid (Walk / Fly left, Climb / Swim right), Darkvision gets a passive-score-sized box, and new Languages + Tool Proficiencies sections are added. Each idea is shown at a phone width and a tablet width so you can see how it reflows across breakpoints.</p>
+
+  <div id="ideaA"></div>
+  <div id="ideaB"></div>
+
+<script>
+  const move2x2 = `
+    <div class="move-card">
+      <div class="move-2x2">
+        <div class="move-cell"><i class="ti ti-shoe"></i><span class="mt">Walk</span><span class="md"></span><span class="mv">30 ft</span></div>
+        <div class="move-cell"><i class="ti ti-mountain"></i><span class="mt">Climb</span><span class="md"></span><span class="mv def">15 ft</span></div>
+        <div class="move-cell"><i class="ti ti-feather"></i><span class="mt">Fly</span><span class="md"></span><span class="mv">&mdash;</span></div>
+        <div class="move-cell"><i class="ti ti-ripple"></i><span class="mt">Swim</span><span class="md"></span><span class="mv def">15 ft</span></div>
+      </div>
+    </div>`;
+
+  const dvBox = `
+    <div class="pbox"><div class="ptop"><i class="ti ti-eye c-blue"></i><div class="pval">60<span style="font-size:13px;font-weight:600;">ft</span></div></div><div class="plbl">Darkvision</div></div>`;
+
+  const pPerc = `<div class="pbox"><div class="ptop"><i class="ti ti-eye c-blue"></i><div class="pval">14</div></div><div class="plbl">Perception</div></div>`;
+  const pInv  = `<div class="pbox"><div class="ptop"><i class="ti ti-zoom-question c-green"></i><div class="pval">12</div></div><div class="plbl">Investigation</div></div>`;
+  const pIns  = `<div class="pbox"><div class="ptop"><i class="ti ti-bulb c-amber"></i><div class="pval">13</div></div><div class="plbl">Insight</div></div>`;
+
+  const spellRow = `
+    <div class="section-hdr section-gap">Spellcasting</div>
+    <div class="box-row spell3">
+      <div class="pbox"><div class="ptop"><i class="ti ti-sparkles c-purple"></i><div class="pval">+4</div></div><div class="plbl">Spell Mod</div></div>
+      <div class="pbox"><div class="ptop"><i class="ti ti-wand c-purple"></i><div class="pval">+6</div></div><div class="plbl">Spell Attack</div></div>
+      <div class="pbox"><div class="ptop"><i class="ti ti-shield-bolt c-purple"></i><div class="pval">14</div></div><div class="plbl">Save DC</div></div>
+    </div>`;
+
+  const languages = `
+    <div class="section-hdr section-gap">Languages</div>
+    <div class="tags">
+      <span class="tag"><i class="ti ti-message"></i>Common</span>
+      <span class="tag"><i class="ti ti-message"></i>Elvish</span>
+      <span class="tag"><i class="ti ti-message"></i>Draconic</span>
+      <span class="tag tag-add"><i class="ti ti-plus"></i>Add</span>
+    </div>`;
+
+  const tools = `
+    <div class="section-hdr section-gap">Tool Proficiencies</div>
+    <div class="tags">
+      <span class="tag"><i class="ti ti-tools"></i>Thieves' Tools</span>
+      <span class="tag"><i class="ti ti-flask"></i>Herbalism Kit</span>
+      <span class="tag tag-add"><i class="ti ti-plus"></i>Add</span>
+    </div>`;
+
+  const skillsTeaser = `
+    <div class="section-hdr section-gap">Skills</div>
+    <div class="skills">
+      <div class="srow"><i class="ti ti-circle-filled pt"></i><span class="sn">Acrobatics</span><span class="sb">+5</span></div>
+      <div class="srow"><i class="ti ti-star-filled pt"></i><span class="sn">Stealth</span><span class="sb">+9</span></div>
+      <div class="srow"><i class="ti ti-circle pt" style="color:var(--ink-faint)"></i><span class="sn">Arcana</span><span class="sb" style="color:var(--ink-mid)">+2</span></div>
+    </div>`;
+
+  // ── Idea A: Darkvision joins the passive-score row (4 boxes) ──
+  const ideaA = `
+    <div class="cols">
+      <div class="col">
+        <div class="section-hdr">Character</div>
+        ${move2x2}
+      </div>
+      <div class="col">
+        <div class="section-hdr">Passive &amp; Senses</div>
+        <div class="box-row passive4">${pPerc}${pInv}${pIns}${dvBox}</div>
+      </div>
+    </div>
+    ${spellRow}
+    ${languages}
+    ${tools}
+    ${skillsTeaser}`;
+
+  // ── Idea B: Darkvision as its own box under Movement; passives stay 3-up; Languages+Tools share a row ──
+  const ideaB = `
+    <div class="cols">
+      <div class="col">
+        <div class="section-hdr">Character</div>
+        ${move2x2}
+        <div class="box-row" style="grid-template-columns:1fr; margin-top:8px;">${dvBox}</div>
+      </div>
+      <div class="col">
+        <div class="section-hdr">Passive Scores</div>
+        <div class="box-row passive3">${pPerc}${pInv}${pIns}</div>
+        ${spellRow}
+      </div>
+    </div>
+    <div class="prof2">
+      <div>${languages}</div>
+      <div>${tools}</div>
+    </div>
+    ${skillsTeaser}`;
+
+  function render(targetId, title, note, html){
+    document.getElementById(targetId).innerHTML = `
+      <div class="idea-title">${title}</div>
+      <div class="idea-note">${note}</div>
+      <div class="frames">
+        <div class="device"><span class="device-tag">Mobile · 380px</span><div class="frame mobile">${html}</div></div>
+        <div class="device"><span class="device-tag">Tablet · 720px</span><div class="frame tablet">${html}</div></div>
+      </div>`;
+  }
+
+  render('ideaA', 'Idea A — Darkvision in the senses row',
+    'Movement 2&times;2 on the left, and Darkvision becomes the 4th box alongside Perception / Investigation / Insight under a renamed "Passive &amp; Senses" header. On mobile the four senses wrap to a 2&times;2; on tablet they sit in a row beside Movement.',
+    ideaA);
+
+  render('ideaB', 'Idea B — Darkvision anchored to the Character column',
+    'Passive Scores stay a clean 3-up. Darkvision sits as its own full-width box directly under the Movement grid, keeping all "how far can I sense/move" info in one column. Languages &amp; Tool Proficiencies split into two columns on tablet, stack on mobile.',
+    ideaB);
+</script>
+</body>
+</html>

@@ -36,11 +36,13 @@ To switch characters or create another, tap the avatar icon in the top-left corn
 ### Act
 **Pinned Actions** appear at the top for your most-used combat moves — pin any ability from its detail sheet to surface it here instantly during your turn. Drag the grip handle (≡) on any pinned row to reorder; on mobile, press and drag the handle with your finger. End caps on pinned cards are color-coded by type: **crimson** for Attack, **indigo** for Magic. If a Spellcasting Ability is set, **Spell Modifier**, **Spell Attack**, and **Save DC** cards appear below your pinned rows for quick reference; tap any to override the values.
 
+The **Player Turn** header carries a combat badge cluster — **Initiative** (auto-calculated from your DEX modifier), **Attacks / round**, and **Armor Class**. Tap any badge to open the **Combat Stats** sheet, where each field shows its badge and updates live; leave a field blank for its auto value or enter a number to override. Changes save when you click out.
+
 Tap any category button (Attack, Magic, Items, Features) to view your saved abilities for that action type. Tap a card to read the full description. Tap **+ Add** to create a new ability card. Features are categorized as **Feat**, **Origin**, or **Species** and display a type icon in the pinned list. Pinned abilities are removed from the All Abilities list below to avoid duplication — unpinning moves them back.
 
-The **HP Tracker** sits below your Pinned Actions — a draggable color-coded slider (green → yellow → orange → red) that tracks your current hit points and saves automatically. When your HP hits 0, **Death Saving Throws** appear: three Failure (skull) and three Success (heartbeat) buttons that fill in count order; they hide again when HP is restored.
-
 The **Extra Actions** section at the bottom has built-in rule reminders for common actions — tap any to read the full rules text.
+
+> **Note:** The Spell Slots, Long Rest, HP Tracker, and Death Saving Throws trackers are temporarily hidden on the Act tab pending a top-card redesign.
 
 ### React
 Lists your Reaction abilities. Tap **+ Add Reaction** to create one. Tap any card to read or edit it.

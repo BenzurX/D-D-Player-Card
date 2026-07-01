@@ -166,11 +166,26 @@ html, body {
 .section-gap { margin-top: 16px; }
 .section-hdr-row { display: flex; align-items: center; justify-content: space-between; }
 .section-hdr-turn { color: var(--ink-mid); }
+/* All headings inside the Player Turn block share the darker ink-mid color */
+.active-turn-block .section-hdr { color: var(--ink-mid); }
 .attacks-hex { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; margin-top: -16px; margin-bottom: -14px; cursor: default; flex-shrink: 0; }
 .attacks-hex svg { position: absolute; top: 2px; left: 0; }
 .attacks-hex-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 52px; height: 52px; line-height: 1; }
 .attacks-hex-num { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 600; color: var(--gold); letter-spacing: 0; }
 .attacks-hex-atk { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 2px; color: var(--parchment); margin-top: 0px; text-transform: uppercase; }
+
+/* ── COMBAT BADGE CLUSTER (Init · Attacks · AC) ──────────────── */
+.combat-cluster { display: flex; gap: 6px; align-items: center; margin: -14px 0 -12px; cursor: pointer; }
+.combat-cluster:active { transform: scale(0.97); }
+.combat-badge { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; flex-shrink: 0; }
+.combat-badge svg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; margin: auto; }
+.combat-badge-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+.combat-badge-num { font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700; color: var(--gold); letter-spacing: 0; }
+.combat-badge-lbl { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 1.5px; color: var(--parchment); text-transform: uppercase; margin-top: 1px; }
+/* Combat Stats sheet: badge to the left of each input */
+.cs-field { display: flex; align-items: center; gap: 12px; }
+.cs-field .form-input { flex: 1; min-width: 0; }
+.cs-field .combat-badge { flex-shrink: 0; }
 
 
 /* ── ACTION BUTTON GRID ─────────────────────────────────────── */
@@ -450,6 +465,14 @@ html, body {
   border-radius: 20px;
   border: 1px solid var(--border);
   line-height: 1.4;
+}
+
+/* Smaller "DC" label so the number beside it reads as the emphasis */
+.stat-dc {
+  font-size: 0.72em;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  margin-right: 1px;
 }
 
 .ability-chip-purple {
@@ -1151,6 +1174,10 @@ html, body {
 .welcome-btn:hover { background: var(--tavern-light); }
 .welcome-btn i { font-size: 22px; }
 
+/* "Learn more about this project" links hidden for now — remove this rule to restore */
+.welcome-learn,
+.project-link { display: none !important; }
+
 .welcome-learn {
   display: inline-block;
   margin-top: 18px;
@@ -1438,6 +1465,7 @@ html, body {
   border: 5px solid transparent;
   border-top-color: var(--border);
 }
+.tip-prof-icon { color: var(--gold); font-size: 0.85em; margin-right: 4px; vertical-align: baseline; }
 .pinned-drag-handle { display: none; font-size: 24px; flex-shrink: 0; color: var(--ink-faint); cursor: grab; }
 .pinned-row:hover .pinned-drag-handle { display: block; }
 .pinned-row:hover .pinned-icon { display: none; }
@@ -2099,6 +2127,10 @@ html, body {
   text-transform: uppercase;
   letter-spacing: 0.4px;
   text-align: center;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .passive-card.tappable {
   cursor: pointer;
@@ -2233,8 +2265,14 @@ html, body {
 
   .explore-info-cols .passive-val {
     order: 4;
-    font-size: var(--text-xl);
+    font-size: var(--text-lg);
     line-height: 1;
+  }
+
+  /* Spellcasting card labels a step larger than passive labels at tablet+ */
+  #spellStatsRow .passive-label,
+  #actSpellStatsRow .passive-label {
+    font-size: var(--text-xs);
   }
 
   /* Defend: resistances, immunities, vulnerabilities side by side */
@@ -2475,7 +2513,8 @@ html, body {
   border: 8px solid transparent;
   border-top-color: var(--tavern-drk);
 }
-.hp-thumb.dragging .hp-tooltip { opacity: 1; }
+/* HP value tooltip hidden for now (item 20) — set back to opacity: 1 to restore */
+.hp-thumb.dragging .hp-tooltip { opacity: 0; }
 
 /* ── DEATH SAVING THROWS ─────────────────────────────────── */
 .ds-section.ds-hidden { display: none; }

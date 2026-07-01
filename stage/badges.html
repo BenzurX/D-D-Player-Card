@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Act Tab Combat Badges — placement + ATK shape</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  :root{
+    --parchment:#F2E6C8; --parchment-mid:#E8D8A8; --parchment-drk:#D4C080;
+    --ink:#2A1D12; --ink-mid:#5A3E28; --ink-faint:#8B6840;
+    --tavern-drk:#1E1208; --gold:#C8A030; --border:#C0A060;
+    --red:#9B3030; --purple:#5040A0; --green:#307050; --blue:#4A6080; --amber:#806020;
+    --text-xs:14px; --text-sm:16px; --text-md:20px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; padding:26px 16px 70px; background:#3D2B1F; font-family:'Crimson Text',Georgia,serif; color:var(--ink);}
+  h1{font-family:'Cinzel',serif; color:#F2E6C8; font-size:24px; text-align:center; margin:0 0 6px;}
+  .intro{color:#C9B896; text-align:center; max-width:760px; margin:0 auto 26px; font-size:16px; line-height:1.5;}
+  .idea-title{font-family:'Cinzel',serif; color:#F2E6C8; font-size:19px; max-width:1180px; margin:36px auto 4px; border-bottom:1px solid #6b5238; padding-bottom:6px;}
+  .idea-note{color:#C9B896; max-width:1180px; margin:0 auto 16px; font-size:15px; line-height:1.5;}
+
+  /* ── badge construction ─────────────────────────────────── */
+  .badge{position:relative; display:inline-flex; align-items:center; justify-content:center; width:52px; height:52px; flex-shrink:0;}
+  .badge svg{position:absolute; inset:0; margin:auto;}
+  .badge-inner{position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1;}
+  .badge-num{font-family:'Cinzel',serif; font-weight:700; font-size:17px; color:var(--gold);}
+  .badge-lbl{font-family:'Cinzel',serif; font-size:9px; letter-spacing:2px; color:#F2E6C8; text-transform:uppercase; margin-top:1px;}
+
+  /* ── device frames ── */
+  .frames{max-width:1180px; margin:0 auto; display:flex; gap:26px; flex-wrap:wrap; justify-content:center; align-items:flex-start;}
+  .device{display:flex; flex-direction:column; align-items:center; gap:8px;}
+  .device-tag{font-family:'Cinzel',serif; font-size:12px; letter-spacing:1px; text-transform:uppercase; color:#C9B896;}
+  .frame{background:#EFE3C2; background-image:radial-gradient(circle at 30% 20%,#F5EACB,#E9DBB4); border:1.5px solid var(--border); border-radius:20px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.4);}
+  .frame.mobile{width:380px;} .frame.tablet{width:720px;}
+
+  /* mock char header + section header */
+  .char-strip{display:flex; align-items:center; gap:10px; padding-bottom:12px; margin-bottom:4px; border-bottom:1px solid var(--border);}
+  .char-strip .av{width:40px; height:40px; border-radius:50%; background:var(--parchment-drk); border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--ink-mid);}
+  .char-strip .cn{font-family:'Cinzel',serif; font-weight:600; font-size:17px;}
+  .char-strip .cs{font-size:13px; color:var(--ink-faint);}
+  .section-hdr{font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:var(--ink-mid); text-transform:uppercase; letter-spacing:1.5px; padding-bottom:6px; border-bottom:1.5px solid var(--border); display:flex; align-items:center; justify-content:space-between; margin:14px 0 12px;}
+  .badge-cluster{display:flex; gap:7px; align-items:center; margin:-14px 0;}
+
+  /* ── faithful pinned rows (copied from the real app) ────── */
+  .pinned-row{display:flex; align-items:stretch; background:var(--parchment); border:1.5px solid var(--border); border-radius:8px; overflow:visible; height:50px; margin-bottom:8px;}
+  .pinned-row-left{flex:1; display:flex; align-items:center; gap:8px; padding:10px 8px; min-width:0;}
+  .pinned-icon{font-size:20px; flex-shrink:0;}
+  .c-red{color:var(--red);} .c-purple{color:var(--purple);}
+  .pinned-name-group{display:flex; flex-direction:column; flex:1; min-width:0;}
+  .pinned-name{font-family:'Cinzel',serif; font-size:var(--text-sm); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--ink);}
+  .pinned-subtype{font-family:'Crimson Text',serif; font-size:var(--text-sm); color:var(--amber); line-height:1.1; margin-top:-3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .pinned-tohit{display:flex; flex-direction:column; align-items:center; flex-shrink:0; padding-right:2px;}
+  .pinned-tohit-num{font-family:'Cinzel',serif; font-size:var(--text-md); font-weight:600; line-height:1.1; color:var(--ink);}
+  .pinned-tohit-lbl{font-family:'Cinzel',serif; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-mid); white-space:nowrap;}
+  .stat-dc{font-size:.72em; font-weight:600; letter-spacing:.3px; margin-right:1px;}
+  .pinned-row-cap{flex:0 0 96px; margin:-5px -2px -5px -4px; position:relative; z-index:1;
+    clip-path:path('M 38 60 L 0 0 L 88 0 A 8 8 0 0 1 96 8 L 96 52 A 8 8 0 0 1 88 60 Z');
+    display:flex; flex-direction:column; align-items:center; justify-content:center; padding:8px 10px 8px 26px; overflow:hidden;}
+  .cap-cat-attack{background:#3D1010;} .cap-cat-attack .pinned-cap-num{color:#F5D0D0;} .cap-cat-attack .pinned-cap-lbl{color:#D49090;}
+  .cap-cat-magic{background:#1A1430;} .cap-cat-magic .pinned-cap-num{color:#D0C8F0;} .cap-cat-magic .pinned-cap-lbl{color:#9088C8;}
+  .pinned-cap-num{font-family:'Cinzel',serif; font-size:var(--text-sm); font-weight:600; line-height:1.1; text-align:center; white-space:nowrap;}
+  .pinned-cap-lbl{font-family:'Crimson Text',serif; font-size:var(--text-xs); text-transform:capitalize; text-align:center; white-space:nowrap;}
+
+  /* ATK shape comparison strips */
+  .atk-grid{max-width:1180px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .atk-card{background:var(--parchment); border:1.5px solid var(--border); border-radius:14px; padding:14px 16px;}
+  .atk-card.current{border-color:var(--red); border-style:dashed;}
+  .atk-card h3{font-family:'Cinzel',serif; font-size:14px; margin:0 0 2px; text-transform:uppercase; letter-spacing:.6px;}
+  .atk-card .desc{font-size:14px; color:var(--ink-mid); margin:0 0 12px; min-height:38px; line-height:1.4;}
+  @media(max-width:720px){ .atk-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+  <h1>Act Tab Combat Badges</h1>
+  <p class="intro">Locked in: badges sit inline on the <strong>Player Turn</strong> heading, ordered <strong>Initiative &rarr; Attacks &rarr; Armor Class</strong>, with bolder numbers and a slightly smaller shield. The real Longsword / Sacred Flame rows below use the actual app cap design (unchanged). Then: three fresh shape ideas for the Attacks badge.</p>
+
+  <div class="idea-title">Chosen layout — FINAL</div>
+  <div class="idea-note">Player Turn header cluster: Initiative (roundel) &rarr; Attacks (spearhead) &rarr; Armor Class (shield), bolder numbers, shrunk shield.</div>
+  <div class="frames" id="chosen"></div>
+
+  <div class="idea-title">Attacks badge — 3 new shape ideas</div>
+  <div class="idea-note">Each shown in the real cluster (Init roundel + AC shield fixed) so you can judge the Attacks shape in context. The dashed card is the current hex for reference.</div>
+  <div class="atk-grid" id="atkGrid"></div>
+
+<script>
+  // ── badge shape builders (dark fill, gold stroke, bold gold number) ──
+  const ROUNDEL=(n,l)=>`<span class="badge"><svg width="50" height="50" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="#1E1208" stroke="#C8A030" stroke-width="1.6"/><circle cx="24" cy="24" r="18" fill="none" stroke="#C8A030" stroke-width="0.8" opacity="0.55"/></svg><span class="badge-inner"><span class="badge-num">${n}</span><span class="badge-lbl">${l}</span></span></span>`;
+  const SHIELD=(n,l)=>`<span class="badge"><svg width="40" height="46" viewBox="0 0 44 50"><path d="M22 2 L42 8 V26 C42 38 32 46 22 49 C12 46 2 38 2 26 V8 Z" fill="#1E1208" stroke="#C8A030" stroke-width="1.7"/></svg><span class="badge-inner"><span class="badge-num">${n}</span><span class="badge-lbl">${l}</span></span></span>`;
+  const HEX=(n,l)=>`<span class="badge"><svg width="52" height="52" viewBox="0 0 48 48"><polygon points="24,4 42,14 42,34 24,44 6,34 6,14" fill="#1E1208" stroke="#C8A030" stroke-width="1.5"/></svg><span class="badge-inner"><span class="badge-num">${n}</span><span class="badge-lbl">${l}</span></span></span>`;
+  // new Attacks-shape candidates
+  const OCTAGON=(n,l)=>`<span class="badge"><svg width="50" height="50" viewBox="0 0 48 48"><polygon points="15,3 33,3 45,15 45,33 33,45 15,45 3,33 3,15" fill="#1E1208" stroke="#C8A030" stroke-width="1.6"/></svg><span class="badge-inner"><span class="badge-num">${n}</span><span class="badge-lbl">${l}</span></span></span>`;
+  const DIAMOND=(n,l)=>`<span class="badge"><svg width="50" height="50" viewBox="0 0 48 48"><polygon points="24,3 45,24 24,45 3,24" fill="#1E1208" stroke="#C8A030" stroke-width="1.6"/></svg><span class="badge-inner"><span class="badge-num">${n}</span><span class="badge-lbl">${l}</span></span></span>`;
+  const SPEARHEAD=(n,l)=>`<span class="badge"><svg width="48" height="50" viewBox="0 0 46 48"><polygon points="23,2 44,17 36,46 10,46 2,17" fill="#1E1208" stroke="#C8A030" stroke-width="1.6"/></svg><span class="badge-inner"><span class="badge-num">${n}</span><span class="badge-lbl">${l}</span></span></span>`;
+
+  const ac='16', init='+2', atk='3';
+
+  // faithful real pinned rows
+  const pinnedRows = `
+    <div class="pinned-row">
+      <div class="pinned-row-left">
+        <i class="ti ti-sword c-red pinned-icon"></i>
+        <div class="pinned-name-group"><span class="pinned-name">Longsword</span><span class="pinned-subtype">Action &middot; Melee</span></div>
+        <div class="pinned-tohit"><span class="pinned-tohit-num">+7</span><span class="pinned-tohit-lbl">To Hit</span></div>
+      </div>
+      <div class="pinned-row-cap cap-cat-attack"><span class="pinned-cap-num">1d8+3</span><span class="pinned-cap-lbl">Slashing</span></div>
+    </div>
+    <div class="pinned-row">
+      <div class="pinned-row-left">
+        <i class="ti ti-wand c-purple pinned-icon"></i>
+        <div class="pinned-name-group"><span class="pinned-name">Sacred Flame</span><span class="pinned-subtype">Action &middot; Spell &middot; Cantrip</span></div>
+        <div class="pinned-tohit"><span class="pinned-tohit-num"><span class="stat-dc">DC</span> 14</span><span class="pinned-tohit-lbl">Wis Save</span></div>
+      </div>
+      <div class="pinned-row-cap cap-cat-magic"><span class="pinned-cap-num">1d8</span><span class="pinned-cap-lbl">Radiant</span></div>
+    </div>`;
+
+  const charStrip = `<div class="char-strip"><div class="av"><i class="ti ti-user"></i></div><div><div class="cn">Thava</div><div class="cs">Lvl 5 &middot; Dragonborn &middot; Paladin</div></div></div>`;
+
+  const layout = (atkShape) => `
+    ${charStrip}
+    <div class="section-hdr"><span>Player Turn</span>
+      <span class="badge-cluster">${ROUNDEL(init,'Init')}${atkShape(atk,'ATK')}${SHIELD(ac,'AC')}</span>
+    </div>
+    ${pinnedRows}`;
+
+  document.getElementById('chosen').innerHTML = `
+    <div class="device"><span class="device-tag">Mobile · 380px</span><div class="frame mobile">${layout(SPEARHEAD)}</div></div>
+    <div class="device"><span class="device-tag">Tablet · 720px</span><div class="frame tablet">${layout(SPEARHEAD)}</div></div>`;
+
+  const atkOptions = [
+    { cls:'current', name:'Current · Hex', desc:'The existing attacks hex. Sits between Init and AC without much silhouette contrast.', fn:HEX },
+    { cls:'', name:'A · Octagon', desc:'Eight-sided arena token. Solid and martial; clearly distinct from the round Init and pointed shield.', fn:OCTAGON },
+    { cls:'', name:'B · Diamond', desc:'Rotated square. Sharp and energetic, reads like a strike marker.', fn:DIAMOND },
+    { cls:'', name:'C · Spearhead ✓ Chosen', desc:'Point-up spearhead. Most aggressive/weapon-like of the three.', fn:SPEARHEAD },
+  ];
+  document.getElementById('atkGrid').innerHTML = atkOptions.map(o => `
+    <div class="atk-card ${o.cls}">
+      <h3>${o.name}</h3>
+      <p class="desc">${o.desc}</p>
+      <div class="section-hdr"><span>Player Turn</span>
+        <span class="badge-cluster">${ROUNDEL(init,'Init')}${o.fn(atk,'ATK')}${SHIELD(ac,'AC')}</span>
+      </div>
+    </div>`).join('');
+</script>
+</body>
+</html>

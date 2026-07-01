@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Death Saving Throws — Design Swatch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    :root {
+      --parchment:     #F2E6C8;
+      --parchment-mid: #E8D8A8;
+      --parchment-drk: #D4C080;
+      --ink:           #2A1D12;
+      --ink-mid:       #5A3E28;
+      --ink-faint:     #8B6840;
+      --tavern-drk:    #1E1208;
+      --tavern-mid:    #2C1E10;
+      --tavern-light:  #3D2B1F;
+      --gold:          #C8A030;
+      --gold-light:    #E8D5A0;
+      --border:        #C0A060;
+      --red:           #9B3030;
+      --green:         #307050;
+      --ds-success:    #2d8a3e;
+      --ds-failure:    #8b1a1a;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Crimson Text', Georgia, serif;
+      background: var(--tavern-drk);
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+      color: var(--ink);
+    }
+
+    h1 {
+      font-family: 'Cinzel', serif;
+      color: var(--gold-light);
+      text-align: center;
+      font-size: 20px;
+      margin-bottom: 6px;
+      letter-spacing: 2px;
+    }
+    .subtitle {
+      text-align: center;
+      color: var(--ink-faint);
+      font-size: 15px;
+      font-style: italic;
+      margin-bottom: 28px;
+    }
+
+    /* ── Section labels ───────────────────────────────────── */
+    .section-label {
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--gold);
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .section-label.ref {
+      color: var(--ink-faint);
+      margin-top: 40px;
+      opacity: 0.7;
+    }
+    .section-divider {
+      border: none;
+      border-top: 1px solid rgba(192,160,96,0.2);
+      margin: 36px auto 0;
+      max-width: 780px;
+    }
+
+    /* ── Cards ────────────────────────────────────────────── */
+    .grid-b {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .grid-ref {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--parchment-mid);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      position: relative;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--border);
+      border-radius: 10px 10px 0 0;
+    }
+    .card.featured::before {
+      background: var(--gold);
+    }
+    .card.ref-card {
+      opacity: 0.65;
+      padding: 10px 12px;
+    }
+
+    .option-label {
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink-faint);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 1.5px solid var(--border);
+    }
+    .card.featured .option-label {
+      color: var(--gold);
+      border-color: var(--gold);
+    }
+
+    /* ── Simulated context: HP bar at 0 ──────────────────── */
+    .ctx-hp {
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink-faint);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ctx-hp i { color: var(--red); font-size: 13px; }
+    .ctx-hp-bar {
+      height: 8px;
+      background: var(--tavern-light);
+      border-radius: 4px;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    .ctx-hp-fill { width: 0%; height: 100%; background: var(--ds-failure); border-radius: 4px; }
+    .ctx-zero {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ds-failure);
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       OPTION B  — shared base styles
+       ════════════════════════════════════════════════════════ */
+    .ds-b {
+      border-top: 1.5px solid var(--border);
+      margin-top: 2px;
+      padding-top: 10px;
+    }
+    .ds-b-header {
+      font-family: 'Cinzel', serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink-faint);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 12px;
+    }
+    .ds-b-track-label {
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .ds-b-track-label.suc { color: var(--ds-success); }
+    .ds-b-track-label.fai { color: var(--ds-failure); }
+    .ds-b-icons { display: flex; justify-content: center; gap: 8px; }
+    .ds-b-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 10px;
+      border: 2px solid;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.08s;
+      font-size: 24px;
+    }
+    .ds-b-icon:active { transform: scale(0.88); }
+    .ds-b-icon.suc-icon { border-color: var(--ds-success); color: var(--ds-success); background: transparent; }
+    .ds-b-icon.suc-icon.filled { background: var(--ds-success); color: var(--parchment); }
+    .ds-b-icon.fai-icon { border-color: var(--ds-failure); color: var(--ds-failure); background: transparent; }
+    .ds-b-icon.fai-icon.filled { background: var(--ds-failure); color: var(--parchment); }
+
+    /* B-1: Paneled tracks */
+    .ds-b1-tracks {
+      display: flex;
+      gap: 10px;
+    }
+    .ds-b1-track {
+      flex: 1;
+      background: rgba(0,0,0,0.06);
+      border-radius: 8px;
+      padding: 10px 8px;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+
+    /* B-2: Open columns, no panel bg */
+    .ds-b2-tracks {
+      display: flex;
+      gap: 0;
+    }
+    .ds-b2-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .ds-b2-col.fai-col {
+      border-right: 1px solid rgba(192,160,96,0.35);
+      padding-right: 10px;
+      margin-right: 10px;
+    }
+
+    /* B-3: Row layout — each type gets its own horizontal row */
+    .ds-b3-rows { display: flex; flex-direction: column; gap: 10px; }
+    .ds-b3-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .ds-b3-row-label {
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      min-width: 68px;
+    }
+    .ds-b3-row-label.fai { color: var(--ds-failure); }
+    .ds-b3-row-label.suc { color: var(--ds-success); }
+    .ds-b3-icons { display: flex; gap: 8px; }
+
+    /* ════════════════════════════════════════════════════════
+       REFERENCE OPTIONS — A, C, D (smaller)
+       ════════════════════════════════════════════════════════ */
+
+    /* Option A pips */
+    .ds-a { border-top: 1.5px solid var(--border); margin-top: 2px; padding-top: 8px; }
+    .ds-a-header { font-family: 'Cinzel', serif; font-size: 10px; font-weight: 700; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+    .ds-a-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .ds-a-row:last-child { margin-bottom: 0; }
+    .ds-a-label { font-family: 'Cinzel', serif; font-size: 10px; font-weight: 600; min-width: 64px; }
+    .ds-a-label.suc { color: var(--ds-success); }
+    .ds-a-label.fai { color: var(--ds-failure); }
+    .ds-a-pips { display: flex; gap: 6px; }
+    .ds-a-pip { width: 22px; height: 22px; border-radius: 50%; border: 2px solid; cursor: pointer; transition: background 0.15s; }
+    .ds-a-pip.suc-pip { border-color: var(--ds-success); background: transparent; }
+    .ds-a-pip.suc-pip.filled { background: var(--ds-success); }
+    .ds-a-pip.fai-pip { border-color: var(--ds-failure); background: transparent; }
+    .ds-a-pip.fai-pip.filled { background: var(--ds-failure); }
+
+    /* Option C split bar */
+    .ds-c { border-top: 1.5px solid var(--border); margin-top: 2px; padding-top: 8px; }
+    .ds-c-header { font-family: 'Cinzel', serif; font-size: 10px; font-weight: 700; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+    .ds-c-row { display: flex; background: var(--tavern-light); border-radius: 8px; overflow: hidden; border: 1.5px solid var(--border); }
+    .ds-c-side { flex: 1; display: flex; align-items: center; padding: 5px 8px; gap: 5px; }
+    .ds-c-side.suc-side { border-right: 1px solid var(--border); }
+    .ds-c-side-label { font-family: 'Cinzel', serif; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0; }
+    .ds-c-side.suc-side .ds-c-side-label { color: var(--ds-success); }
+    .ds-c-side.fai-side .ds-c-side-label { color: var(--ds-failure); }
+    .ds-c-pips { display: flex; gap: 4px; flex: 1; justify-content: flex-end; }
+    .ds-c-pip { width: 18px; height: 18px; border-radius: 50%; border: 2px solid; cursor: pointer; transition: background 0.15s; flex-shrink: 0; }
+    .ds-c-pip.suc-pip { border-color: rgba(45,138,62,0.5); background: rgba(45,138,62,0.08); }
+    .ds-c-pip.suc-pip.filled { background: var(--ds-success); border-color: var(--ds-success); }
+    .ds-c-pip.fai-pip { border-color: rgba(139,26,26,0.5); background: rgba(139,26,26,0.08); }
+    .ds-c-pip.fai-pip.filled { background: var(--ds-failure); border-color: var(--ds-failure); }
+
+    /* Option D glowing tokens */
+    .ds-d { border-top: 1.5px solid var(--border); margin-top: 2px; padding-top: 8px; }
+    .ds-d-header { font-family: 'Cinzel', serif; font-size: 10px; font-weight: 700; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+    .ds-d-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .ds-d-col { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .ds-d-col-label { font-family: 'Cinzel', serif; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+    .ds-d-col.suc-col .ds-d-col-label { color: var(--ds-success); }
+    .ds-d-col.fai-col .ds-d-col-label { color: var(--ds-failure); }
+    .ds-d-tokens { display: flex; gap: 5px; }
+    .ds-d-token { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; transition: background 0.15s, box-shadow 0.15s; border: 2px solid; }
+    .ds-d-token.suc-token { border-color: var(--ds-success); background: rgba(45,138,62,0.08); color: var(--ds-success); }
+    .ds-d-token.suc-token.filled { background: var(--ds-success); color: var(--parchment); box-shadow: 0 0 8px rgba(45,138,62,0.4); }
+    .ds-d-token.fai-token { border-color: var(--ds-failure); background: rgba(139,26,26,0.08); color: var(--ds-failure); }
+    .ds-d-token.fai-token.filled { background: var(--ds-failure); color: var(--parchment); box-shadow: 0 0 8px rgba(139,26,26,0.4); }
+  </style>
+</head>
+<body>
+
+<h1>Death Saving Throws</h1>
+<p class="subtitle">Appears when HP reaches 0 — click icons to toggle</p>
+
+<div class="section-label">Option B — Variations</div>
+
+<div class="grid-b">
+
+  <!-- ── B-1: Paneled Tracks ─────────────────────────────── -->
+  <div class="card featured">
+    <div class="option-label">B-1 — Paneled Tracks</div>
+    <div class="ctx-hp"><i class="ti ti-heart"></i> Hit Points</div>
+    <div class="ctx-hp-bar"><div class="ctx-hp-fill"></div><span class="ctx-zero">0 HP</span></div>
+    <div class="ds-b">
+      <div class="ds-b-header">Death Saving Throws</div>
+      <div class="ds-b1-tracks">
+        <div class="ds-b1-track">
+          <div class="ds-b-track-label fai">Failures</div>
+          <div class="ds-b-icons" data-type="b1-fai">
+            <div class="ds-b-icon fai-icon" data-idx="0"><i class="ti ti-skull"></i></div>
+            <div class="ds-b-icon fai-icon" data-idx="1"><i class="ti ti-skull"></i></div>
+            <div class="ds-b-icon fai-icon" data-idx="2"><i class="ti ti-skull"></i></div>
+          </div>
+        </div>
+        <div class="ds-b1-track">
+          <div class="ds-b-track-label suc">Successes</div>
+          <div class="ds-b-icons" data-type="b1-suc">
+            <div class="ds-b-icon suc-icon" data-idx="0"><i class="ti ti-heartbeat"></i></div>
+            <div class="ds-b-icon suc-icon" data-idx="1"><i class="ti ti-heartbeat"></i></div>
+            <div class="ds-b-icon suc-icon" data-idx="2"><i class="ti ti-heartbeat"></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── B-2: Open Columns ──────────────────────────────── -->
+  <div class="card featured">
+    <div class="option-label">B-2 — Open Columns</div>
+    <div class="ctx-hp"><i class="ti ti-heart"></i> Hit Points</div>
+    <div class="ctx-hp-bar"><div class="ctx-hp-fill"></div><span class="ctx-zero">0 HP</span></div>
+    <div class="ds-b">
+      <div class="ds-b-header">Death Saving Throws</div>
+      <div class="ds-b2-tracks">
+        <div class="ds-b2-col fai-col">
+          <div class="ds-b-track-label fai">Failures</div>
+          <div class="ds-b-icons" data-type="b2-fai">
+            <div class="ds-b-icon fai-icon" data-idx="0"><i class="ti ti-skull"></i></div>
+            <div class="ds-b-icon fai-icon" data-idx="1"><i class="ti ti-skull"></i></div>
+            <div class="ds-b-icon fai-icon" data-idx="2"><i class="ti ti-skull"></i></div>
+          </div>
+        </div>
+        <div class="ds-b2-col suc-col">
+          <div class="ds-b-track-label suc">Successes</div>
+          <div class="ds-b-icons" data-type="b2-suc">
+            <div class="ds-b-icon suc-icon" data-idx="0"><i class="ti ti-heartbeat"></i></div>
+            <div class="ds-b-icon suc-icon" data-idx="1"><i class="ti ti-heartbeat"></i></div>
+            <div class="ds-b-icon suc-icon" data-idx="2"><i class="ti ti-heartbeat"></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── B-3: Row Layout ────────────────────────────────── -->
+  <div class="card featured">
+    <div class="option-label">B-3 — Row Layout</div>
+    <div class="ctx-hp"><i class="ti ti-heart"></i> Hit Points</div>
+    <div class="ctx-hp-bar"><div class="ctx-hp-fill"></div><span class="ctx-zero">0 HP</span></div>
+    <div class="ds-b">
+      <div class="ds-b-header">Death Saving Throws</div>
+      <div class="ds-b3-rows">
+        <div class="ds-b3-row">
+          <span class="ds-b3-row-label fai">Failures</span>
+          <div class="ds-b3-icons" data-type="b3-fai">
+            <div class="ds-b-icon fai-icon" data-idx="0"><i class="ti ti-skull"></i></div>
+            <div class="ds-b-icon fai-icon" data-idx="1"><i class="ti ti-skull"></i></div>
+            <div class="ds-b-icon fai-icon" data-idx="2"><i class="ti ti-skull"></i></div>
+          </div>
+        </div>
+        <div class="ds-b3-row">
+          <span class="ds-b3-row-label suc">Successes</span>
+          <div class="ds-b3-icons" data-type="b3-suc">
+            <div class="ds-b-icon suc-icon" data-idx="0"><i class="ti ti-heartbeat"></i></div>
+            <div class="ds-b-icon suc-icon" data-idx="1"><i class="ti ti-heartbeat"></i></div>
+            <div class="ds-b-icon suc-icon" data-idx="2"><i class="ti ti-heartbeat"></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Reference options ─────────────────────────────────── -->
+<hr class="section-divider">
+<div class="section-label ref">Other Options — For Reference</div>
+
+<div class="grid-ref">
+
+  <!-- A -->
+  <div class="card ref-card">
+    <div class="option-label">A — Two-Row Pips</div>
+    <div class="ctx-hp"><i class="ti ti-heart"></i> Hit Points</div>
+    <div class="ctx-hp-bar"><div class="ctx-hp-fill"></div><span class="ctx-zero">0 HP</span></div>
+    <div class="ds-a">
+      <div class="ds-a-header">Death Saving Throws</div>
+      <div class="ds-a-row">
+        <span class="ds-a-label suc">Successes</span>
+        <div class="ds-a-pips" data-type="a-suc">
+          <div class="ds-a-pip suc-pip" data-idx="0"></div>
+          <div class="ds-a-pip suc-pip" data-idx="1"></div>
+          <div class="ds-a-pip suc-pip" data-idx="2"></div>
+        </div>
+      </div>
+      <div class="ds-a-row">
+        <span class="ds-a-label fai">Failures</span>
+        <div class="ds-a-pips" data-type="a-fai">
+          <div class="ds-a-pip fai-pip" data-idx="0"></div>
+          <div class="ds-a-pip fai-pip" data-idx="1"></div>
+          <div class="ds-a-pip fai-pip" data-idx="2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- C -->
+  <div class="card ref-card">
+    <div class="option-label">C — Compact Split Bar</div>
+    <div class="ctx-hp"><i class="ti ti-heart"></i> Hit Points</div>
+    <div class="ctx-hp-bar"><div class="ctx-hp-fill"></div><span class="ctx-zero">0 HP</span></div>
+    <div class="ds-c">
+      <div class="ds-c-header">Death Saving Throws</div>
+      <div class="ds-c-row">
+        <div class="ds-c-side suc-side">
+          <span class="ds-c-side-label">Suc</span>
+          <div class="ds-c-pips" data-type="c-suc">
+            <div class="ds-c-pip suc-pip" data-idx="0"></div>
+            <div class="ds-c-pip suc-pip" data-idx="1"></div>
+            <div class="ds-c-pip suc-pip" data-idx="2"></div>
+          </div>
+        </div>
+        <div class="ds-c-side fai-side">
+          <span class="ds-c-side-label">Fail</span>
+          <div class="ds-c-pips" data-type="c-fai">
+            <div class="ds-c-pip fai-pip" data-idx="0"></div>
+            <div class="ds-c-pip fai-pip" data-idx="1"></div>
+            <div class="ds-c-pip fai-pip" data-idx="2"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- D -->
+  <div class="card ref-card">
+    <div class="option-label">D — Glowing Tokens</div>
+    <div class="ctx-hp"><i class="ti ti-heart"></i> Hit Points</div>
+    <div class="ctx-hp-bar"><div class="ctx-hp-fill"></div><span class="ctx-zero">0 HP</span></div>
+    <div class="ds-d">
+      <div class="ds-d-header">Death Saving Throws</div>
+      <div class="ds-d-grid">
+        <div class="ds-d-col suc-col">
+          <div class="ds-d-col-label">Successes</div>
+          <div class="ds-d-tokens" data-type="d-suc">
+            <div class="ds-d-token suc-token" data-idx="0"><i class="ti ti-check"></i></div>
+            <div class="ds-d-token suc-token" data-idx="1"><i class="ti ti-check"></i></div>
+            <div class="ds-d-token suc-token" data-idx="2"><i class="ti ti-check"></i></div>
+          </div>
+        </div>
+        <div class="ds-d-col fai-col">
+          <div class="ds-d-col-label">Failures</div>
+          <div class="ds-d-tokens" data-type="d-fai">
+            <div class="ds-d-token fai-token" data-idx="0"><i class="ti ti-x"></i></div>
+            <div class="ds-d-token fai-token" data-idx="1"><i class="ti ti-x"></i></div>
+            <div class="ds-d-token fai-token" data-idx="2"><i class="ti ti-x"></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  document.querySelectorAll('[data-type]').forEach(group => {
+    group.querySelectorAll('[data-idx]').forEach(el => {
+      el.addEventListener('click', () => el.classList.toggle('filled'));
+    });
+  });
+</script>
+</body>
+</html>

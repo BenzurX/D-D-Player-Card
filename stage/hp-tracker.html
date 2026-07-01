@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HP Tracker — Design Concepts</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+  <style>
+    :root {
+      --parchment:     #f5ede0;
+      --parchment-mid: #ede0cc;
+      --parchment-drk: #e0cdb0;
+      --ink-dark:  #2c1a0e;
+      --ink-mid:   #5a3e2b;
+      --ink-light: #8b6347;
+      --border:    #c8a882;
+      --crimson:   #8b1a1a;
+      --amber:     #b5720a;
+      --purple:    #5b3fa0;
+      --green:     #3A7A20;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #1a0f06;
+      font-family: 'Crimson Text', Georgia, serif;
+      color: var(--ink-dark);
+      padding: 28px 16px 48px;
+      min-height: 100vh;
+    }
+
+    h1 {
+      font-family: 'Cinzel', serif;
+      color: var(--parchment);
+      text-align: center;
+      font-size: 20px;
+      letter-spacing: 0.15em;
+      margin-bottom: 6px;
+    }
+    .page-sub {
+      text-align: center;
+      color: #8b6347;
+      font-size: 13px;
+      margin-bottom: 32px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    @media (min-width: 860px) {
+      .grid { grid-template-columns: 1fr 1fr; max-width: 900px; }
+    }
+
+    .card {
+      background: var(--parchment);
+      border-radius: 14px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      box-shadow: 0 3px 12px rgba(0,0,0,0.4);
+    }
+    .card-label {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      color: var(--ink-light);
+      text-transform: uppercase;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+
+    /* ══════════════════════════════════════════
+       OPTION A — DRAG SLIDER
+    ══════════════════════════════════════════ */
+    .slider-outer {
+      padding: 36px 8px 10px;
+    }
+    .slider-track {
+      position: relative;
+      height: 8px;
+      background: var(--parchment-drk);
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+    }
+    .slider-fill {
+      position: absolute;
+      inset: 0;
+      right: auto;
+      height: 100%;
+      background: var(--crimson);
+      border-radius: 4px;
+      pointer-events: none;
+      transition: background 0.25s;
+    }
+    .slider-thumb {
+      position: absolute;
+      top: 50%;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: var(--parchment);
+      border: 2px solid var(--crimson);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.28);
+      transform: translate(-50%, -50%);
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--crimson);
+      user-select: none;
+      touch-action: none;
+      transition: box-shadow 0.15s;
+    }
+    .slider-thumb.dragging {
+      cursor: grabbing;
+      box-shadow: 0 4px 16px rgba(139,26,26,0.45);
+    }
+    .slider-tooltip {
+      position: absolute;
+      bottom: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ink-dark);
+      color: var(--parchment);
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.12s;
+    }
+    .slider-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%; left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: var(--ink-dark);
+    }
+    .slider-thumb.dragging .slider-tooltip { opacity: 1; }
+    .slider-row-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-top: 18px;
+    }
+    .slider-label {
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--ink-light);
+    }
+    .slider-vals {
+      font-family: 'Cinzel', serif;
+      font-size: 15px;
+      color: var(--ink-mid);
+    }
+    .slider-vals .hp-cur { color: var(--crimson); font-size: 20px; font-weight: 700; }
+
+    /* ── Option A2 overrides ── */
+    #thumbA2 {
+      width: 46px;
+      height: 46px;
+      font-size: 22px;
+    }
+    #tooltipA2 {
+      font-size: 24px;
+      font-weight: 700;
+      padding: 10px 22px;
+      border-radius: 10px;
+      bottom: calc(100% + 16px);
+    }
+    #tooltipA2::after {
+      border-width: 8px;
+    }
+    #sliderHpA2 { font-size: 20px; font-weight: 700; }
+
+
+    /* ══════════════════════════════════════════
+       OPTION B — PROGRESS RING
+    ══════════════════════════════════════════ */
+    .ring-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      padding: 4px 0;
+    }
+    .ring-svg-wrap {
+      position: relative;
+      width: 148px;
+      height: 148px;
+    }
+    .ring-svg-wrap svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+    .ring-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .ring-hp-big {
+      font-family: 'Cinzel', serif;
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--ink-dark);
+    }
+    .ring-hp-max {
+      font-size: 12px;
+      color: var(--ink-light);
+      margin-top: 2px;
+    }
+    .ring-btns {
+      display: flex;
+      gap: 10px;
+    }
+    .ring-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      background: none;
+      font-size: 22px;
+      cursor: pointer;
+      color: var(--ink-mid);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      font-family: monospace;
+    }
+    .ring-btn:hover.dmg { border-color: var(--crimson); color: var(--crimson); background: #fdf0f0; }
+    .ring-btn:hover.heal { border-color: var(--green); color: var(--green); background: #f0fdf0; }
+    .ring-btn:active { transform: scale(0.93); }
+    .ring-hint { font-size: 11px; color: var(--ink-light); }
+
+
+    /* ══════════════════════════════════════════
+       OPTION C — PIP GRID
+    ══════════════════════════════════════════ */
+    .pips-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .pips-nums {
+      font-family: 'Cinzel', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ink-dark);
+    }
+    .pips-nums .pips-slash { color: var(--ink-light); font-size: 13px; margin: 0 2px; }
+    .pips-nums .pips-unit { color: var(--ink-light); font-size: 11px; letter-spacing: 0.08em; }
+    .pips-bar-wrap {
+      height: 6px;
+      background: var(--parchment-drk);
+      border-radius: 3px;
+      border: 1px solid var(--border);
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+    .pips-bar-fill {
+      height: 100%;
+      background: var(--crimson);
+      border-radius: 3px;
+      transition: width 0.2s, background 0.3s;
+    }
+    .pips-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .pip {
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      border: 1.5px solid var(--border);
+      background: var(--parchment-drk);
+      cursor: pointer;
+      transition: background 0.1s, border-color 0.1s, transform 0.1s;
+      flex-shrink: 0;
+    }
+    .pip.alive {
+      background: var(--crimson);
+      border-color: #6b1010;
+    }
+    .pip.alive:hover { background: #a02020; }
+    .pip:not(.alive):hover { background: var(--parchment-mid); border-color: var(--ink-light); }
+    .pip:active { transform: scale(0.85); }
+    .pips-hint { font-size: 11px; color: var(--ink-light); margin-top: 10px; }
+
+
+    /* ══════════════════════════════════════════
+       OPTION D — COMBAT INPUT PANEL
+    ══════════════════════════════════════════ */
+    .combat-display {
+      text-align: center;
+      padding: 8px 0 4px;
+    }
+    .combat-current {
+      font-family: 'Cinzel', serif;
+      font-size: 60px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--ink-dark);
+      transition: color 0.3s;
+    }
+    .combat-current.low { color: var(--crimson); }
+    .combat-maxlabel { font-size: 12px; color: var(--ink-light); margin-top: 2px; }
+    .combat-delta-wrap {
+      text-align: center;
+      height: 24px;
+      margin: 6px 0;
+    }
+    .combat-delta {
+      font-family: 'Cinzel', serif;
+      font-size: 16px;
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.2s;
+      display: inline-block;
+    }
+    .combat-delta.show { opacity: 1; }
+    .combat-delta.pos { color: var(--green); }
+    .combat-delta.neg { color: var(--crimson); }
+
+    .combat-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .combat-btn {
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: none;
+      padding: 10px 4px 8px;
+      cursor: pointer;
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      color: var(--ink-mid);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+    }
+    .combat-btn i { font-size: 19px; }
+    .combat-btn.dmg:hover  { border-color: var(--crimson); color: var(--crimson); background: #fdf0f0; }
+    .combat-btn.heal:hover { border-color: var(--green);   color: var(--green);   background: #f0fdf4; }
+    .combat-btn.set:hover  { border-color: var(--purple);  color: var(--purple);  background: #f4f0fd; }
+    .combat-btn:active { transform: scale(0.95); }
+
+    .combat-input-row {
+      display: none;
+      gap: 8px;
+      align-items: center;
+    }
+    .combat-input-row.show { display: flex; }
+    .combat-mode-label {
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      color: var(--ink-light);
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+    .combat-num-input {
+      flex: 1;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: var(--parchment-mid);
+      padding: 9px 10px;
+      font-family: 'Cinzel', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ink-dark);
+      text-align: center;
+      min-width: 0;
+    }
+    .combat-num-input:focus { outline: none; border-color: var(--amber); }
+    .combat-ok {
+      padding: 9px 14px;
+      border-radius: 8px;
+      border: 1.5px solid var(--green);
+      background: none;
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      color: var(--green);
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .combat-ok:hover { background: #e8f5e0; }
+    .combat-cancel {
+      padding: 9px 10px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      background: none;
+      font-size: 13px;
+      color: var(--ink-mid);
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .combat-cancel:hover { background: var(--parchment-drk); }
+  </style>
+</head>
+<body>
+
+  <h1>HP TRACKER</h1>
+  <p class="page-sub">Five design concepts — all interactive</p>
+
+  <div class="grid">
+
+    <!-- ── A: DRAG SLIDER ── -->
+    <div class="card">
+      <div class="card-label">Option A — Drag Slider</div>
+      <div class="slider-outer">
+        <div class="slider-track" id="trackA">
+          <div class="slider-fill" id="fillA"></div>
+          <div class="slider-thumb" id="thumbA">
+            <div class="slider-tooltip" id="tooltipA"></div>
+            <span id="thumbNumA"></span>
+          </div>
+        </div>
+      </div>
+      <div class="slider-row-label">
+        <span class="slider-label">HIT POINTS</span>
+        <div class="slider-vals"><span class="hp-cur" id="sliderHpA"></span> / 80</div>
+      </div>
+    </div>
+
+    <!-- ── A2: DRAG SLIDER — THRESHOLD COLORS ── -->
+    <div class="card">
+      <div class="card-label">Option A2 — Threshold Colors</div>
+      <div class="slider-outer">
+        <div class="slider-track" id="trackA2">
+          <div class="slider-fill" id="fillA2"></div>
+          <div class="slider-thumb" id="thumbA2">
+            <div class="slider-tooltip" id="tooltipA2"></div>
+            <span id="thumbNumA2"></span>
+          </div>
+        </div>
+      </div>
+      <div class="slider-row-label">
+        <span class="slider-label">HIT POINTS</span>
+        <div class="slider-vals"><span id="sliderHpA2"></span> / 100</div>
+      </div>
+    </div>
+
+    <!-- ── B: PROGRESS RING ── -->
+    <div class="card">
+      <div class="card-label">Option B — Progress Ring</div>
+      <div class="ring-wrap">
+        <div class="ring-svg-wrap">
+          <svg viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="42" fill="none" stroke="#e0cdb0" stroke-width="9"/>
+            <circle id="ringArc" cx="50" cy="50" r="42" fill="none" stroke="#3A7A20"
+              stroke-width="9" stroke-linecap="round"
+              stroke-dasharray="263.9" stroke-dashoffset="0"/>
+          </svg>
+          <div class="ring-center">
+            <div class="ring-hp-big" id="ringHpNum">52</div>
+            <div class="ring-hp-max">/ 60 HP</div>
+          </div>
+        </div>
+        <div class="ring-btns">
+          <button class="ring-btn dmg" id="ringDmgBtn">−5</button>
+          <button class="ring-btn heal" id="ringHealBtn">+5</button>
+        </div>
+        <div class="ring-hint">Ring color shifts green → amber → red as HP drops</div>
+      </div>
+    </div>
+
+    <!-- ── C: PIP GRID ── -->
+    <div class="card">
+      <div class="card-label">Option C — Pip Grid</div>
+      <div>
+        <div class="pips-header">
+          <div class="pips-nums">
+            <span id="pipCur">22</span><span class="pips-slash">/</span><span id="pipMax">30</span>
+            <span class="pips-unit"> HP</span>
+          </div>
+        </div>
+        <div class="pips-bar-wrap"><div class="pips-bar-fill" id="pipsBar"></div></div>
+        <div class="pips-grid" id="pipsGrid"></div>
+        <div class="pips-hint">Tap a pip to set HP · Tap active pip to reduce by 1</div>
+      </div>
+    </div>
+
+    <!-- ── D: COMBAT INPUT PANEL ── -->
+    <div class="card">
+      <div class="card-label">Option D — Combat Panel</div>
+      <div class="combat-display">
+        <div class="combat-current" id="combatNum">38</div>
+        <div class="combat-maxlabel">/ 55 max HP</div>
+      </div>
+      <div class="combat-delta-wrap">
+        <span class="combat-delta" id="combatDelta"></span>
+      </div>
+      <div class="combat-btns">
+        <button class="combat-btn dmg"  data-mode="dmg" ><i class="ti ti-sword"></i>Damage</button>
+        <button class="combat-btn heal" data-mode="heal"><i class="ti ti-heart-plus"></i>Heal</button>
+        <button class="combat-btn set"  data-mode="set" ><i class="ti ti-edit"></i>Set HP</button>
+      </div>
+      <div class="combat-input-row" id="combatInputRow">
+        <span class="combat-mode-label" id="combatModeLabel"></span>
+        <input class="combat-num-input" id="combatInput" type="number" min="0" max="999" placeholder="0">
+        <button class="combat-ok"     id="combatOk">OK</button>
+        <button class="combat-cancel" id="combatCancel">✕</button>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+/* ══ A: Drag Slider ══ */
+const MAXA = 80;
+let hpA = 65;
+
+const trackA   = document.getElementById('trackA');
+const fillA    = document.getElementById('fillA');
+const thumbA   = document.getElementById('thumbA');
+const thumbNumA  = document.getElementById('thumbNumA');
+const tooltipA = document.getElementById('tooltipA');
+const sliderHpA = document.getElementById('sliderHpA');
+
+function hpColor(pct) {
+  return pct < 0.25 ? '#6b1010' : '#8b1a1a';
+}
+
+function setSlider(hp) {
+  hp = Math.max(0, Math.min(MAXA, Math.round(hp)));
+  hpA = hp;
+  const pct = hp / MAXA;
+  fillA.style.width = (pct * 100) + '%';
+  fillA.style.background = hpColor(pct);
+  thumbA.style.borderColor = hpColor(pct);
+  thumbA.style.color = hpColor(pct);
+  thumbA.style.left = (pct * 100) + '%';
+  thumbNumA.textContent = hp;
+  tooltipA.textContent = hp + ' HP';
+  sliderHpA.textContent = hp;
+}
+
+function hpFromX(clientX) {
+  const r = trackA.getBoundingClientRect();
+  return Math.round(Math.max(0, Math.min(1, (clientX - r.left) / r.width)) * MAXA);
+}
+
+let draggingA = false;
+thumbA.addEventListener('mousedown',  e => { draggingA = true; thumbA.classList.add('dragging'); e.preventDefault(); });
+thumbA.addEventListener('touchstart', e => { draggingA = true; thumbA.classList.add('dragging'); e.preventDefault(); }, { passive: false });
+document.addEventListener('mousemove',  e => { if (draggingA) setSlider(hpFromX(e.clientX)); });
+document.addEventListener('touchmove',  e => { if (draggingA) setSlider(hpFromX(e.touches[0].clientX)); }, { passive: false });
+document.addEventListener('mouseup',   () => { draggingA = false; thumbA.classList.remove('dragging'); });
+document.addEventListener('touchend',  () => { draggingA = false; thumbA.classList.remove('dragging'); });
+trackA.addEventListener('click', e => { if (!draggingA) setSlider(hpFromX(e.clientX)); });
+
+setSlider(65);
+
+
+/* ══ A2: Drag Slider — Threshold Colors ══ */
+const MAXA2 = 100;
+let hpA2 = 80;
+
+const trackA2    = document.getElementById('trackA2');
+const fillA2     = document.getElementById('fillA2');
+const thumbA2    = document.getElementById('thumbA2');
+const thumbNumA2 = document.getElementById('thumbNumA2');
+const tooltipA2  = document.getElementById('tooltipA2');
+const sliderHpA2 = document.getElementById('sliderHpA2');
+
+function hpColorA2(pct) {
+  if (pct > 0.75) return '#2d8a3e';  // healthy green
+  if (pct > 0.50) return '#c4a000';  // light yellow-gold
+  if (pct > 0.25) return '#d47800';  // dark amber-orange
+  return '#8b1a1a';                   // red
+}
+
+function setSliderA2(hp) {
+  hp = Math.max(0, Math.min(MAXA2, Math.round(hp)));
+  hpA2 = hp;
+  const pct = hp / MAXA2;
+  const col = hpColorA2(pct);
+  fillA2.style.width        = (pct * 100) + '%';
+  fillA2.style.background   = col;
+  thumbA2.style.borderColor = col;
+  thumbA2.style.color       = col;
+  thumbA2.style.left        = (pct * 100) + '%';
+  thumbNumA2.textContent    = hp;
+  tooltipA2.textContent     = hp + ' HP';
+  sliderHpA2.textContent    = hp;
+  sliderHpA2.style.color    = col;
+}
+
+function hpFromXA2(clientX) {
+  const r = trackA2.getBoundingClientRect();
+  return Math.round(Math.max(0, Math.min(1, (clientX - r.left) / r.width)) * MAXA2);
+}
+
+let draggingA2 = false;
+thumbA2.addEventListener('mousedown',  e => { draggingA2 = true; thumbA2.classList.add('dragging'); e.preventDefault(); });
+thumbA2.addEventListener('touchstart', e => { draggingA2 = true; thumbA2.classList.add('dragging'); e.preventDefault(); }, { passive: false });
+document.addEventListener('mousemove',  e => { if (draggingA2) setSliderA2(hpFromXA2(e.clientX)); });
+document.addEventListener('touchmove',  e => { if (draggingA2) setSliderA2(hpFromXA2(e.touches[0].clientX)); }, { passive: false });
+document.addEventListener('mouseup',   () => { draggingA2 = false; thumbA2.classList.remove('dragging'); });
+document.addEventListener('touchend',  () => { draggingA2 = false; thumbA2.classList.remove('dragging'); });
+trackA2.addEventListener('click', e => { if (!draggingA2) setSliderA2(hpFromXA2(e.clientX)); });
+
+setSliderA2(80);
+
+
+/* ══ B: Progress Ring ══ */
+const MAXB = 60;
+const CIRC = 2 * Math.PI * 42; // 263.89
+let hpB = 52;
+const ringArc    = document.getElementById('ringArc');
+const ringHpNum  = document.getElementById('ringHpNum');
+
+function setRing(hp) {
+  hp = Math.max(0, Math.min(MAXB, hp));
+  hpB = hp;
+  const pct = hp / MAXB;
+  ringArc.setAttribute('stroke-dashoffset', CIRC * (1 - pct));
+  ringArc.setAttribute('stroke', pct > 0.5 ? '#3A7A20' : pct > 0.25 ? '#b5720a' : '#8b1a1a');
+  ringHpNum.textContent = hp;
+  ringHpNum.style.color = pct < 0.25 ? '#8b1a1a' : '#2c1a0e';
+}
+
+document.getElementById('ringDmgBtn').addEventListener('click',  () => setRing(hpB - 5));
+document.getElementById('ringHealBtn').addEventListener('click', () => setRing(hpB + 5));
+setRing(52);
+
+
+/* ══ C: Pip Grid ══ */
+const MAXC = 30;
+let hpC = 22;
+const pipsGrid = document.getElementById('pipsGrid');
+const pipCurEl = document.getElementById('pipCur');
+const pipsBar  = document.getElementById('pipsBar');
+
+function renderPips() {
+  pipsGrid.innerHTML = '';
+  for (let i = 1; i <= MAXC; i++) {
+    const pip = document.createElement('div');
+    pip.className = 'pip' + (i <= hpC ? ' alive' : '');
+    const idx = i;
+    pip.addEventListener('click', () => {
+      // Tap filled pip = reduce HP by 1; tap empty pip = set HP to that value
+      if (idx === hpC) { hpC = Math.max(0, hpC - 1); }
+      else { hpC = idx; }
+      pipCurEl.textContent = hpC;
+      pipsBar.style.width = (hpC / MAXC * 100) + '%';
+      pipsBar.style.background = hpC / MAXC < 0.25 ? '#8b1a1a' : hpC / MAXC < 0.5 ? '#b5720a' : '#8b1a1a';
+      renderPips();
+    });
+    pipsGrid.appendChild(pip);
+  }
+  pipsBar.style.width = (hpC / MAXC * 100) + '%';
+  pipsBar.style.background = hpC / MAXC < 0.25 ? '#6b1010' : '#8b1a1a';
+}
+renderPips();
+pipCurEl.textContent = hpC;
+
+
+/* ══ D: Combat Panel ══ */
+const MAXD = 55;
+let hpD = 38;
+let modeD = null;
+let deltaTimer = null;
+
+const combatNumEl    = document.getElementById('combatNum');
+const combatDeltaEl  = document.getElementById('combatDelta');
+const combatInputRow = document.getElementById('combatInputRow');
+const combatInput    = document.getElementById('combatInput');
+const combatModeLabel = document.getElementById('combatModeLabel');
+
+function updateCombatDisplay() {
+  combatNumEl.textContent = hpD;
+  combatNumEl.classList.toggle('low', hpD / MAXD < 0.25);
+}
+
+function flashDelta(diff) {
+  clearTimeout(deltaTimer);
+  combatDeltaEl.className = 'combat-delta show ' + (diff >= 0 ? 'pos' : 'neg');
+  combatDeltaEl.textContent = (diff >= 0 ? '+' : '') + diff;
+  deltaTimer = setTimeout(() => combatDeltaEl.classList.remove('show'), 2200);
+}
+
+function applyD() {
+  const val = parseInt(combatInput.value, 10);
+  if (isNaN(val) || val < 0) return;
+  const old = hpD;
+  if (modeD === 'dmg')  hpD = Math.max(0, hpD - val);
+  if (modeD === 'heal') hpD = Math.min(MAXD, hpD + val);
+  if (modeD === 'set')  hpD = Math.max(0, Math.min(MAXD, val));
+  updateCombatDisplay();
+  if (hpD !== old) flashDelta(hpD - old);
+  combatInputRow.classList.remove('show');
+  combatInput.value = '';
+  modeD = null;
+}
+
+document.querySelectorAll('.combat-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    modeD = btn.dataset.mode;
+    const labels = { dmg: 'DAMAGE', heal: 'HEAL', set: 'SET HP' };
+    combatModeLabel.textContent = labels[modeD];
+    combatInput.placeholder = modeD === 'set' ? hpD : '0';
+    combatInput.value = '';
+    combatInputRow.classList.add('show');
+    combatInput.focus();
+  });
+});
+
+document.getElementById('combatOk').addEventListener('click', applyD);
+document.getElementById('combatCancel').addEventListener('click', () => {
+  combatInputRow.classList.remove('show');
+  combatInput.value = '';
+  modeD = null;
+});
+combatInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') applyD();
+  if (e.key === 'Escape') document.getElementById('combatCancel').click();
+});
+
+updateCombatDisplay();
+</script>
+</body>
+</html>

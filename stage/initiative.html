@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Initiative Badge — Shape Ideas (#19)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --parchment:#F2E6C8; --parchment-mid:#E8D8A8; --parchment-drk:#D4C080;
+    --ink:#2A1D12; --ink-mid:#5A3E28; --ink-faint:#8B6840;
+    --tavern-drk:#1E1208; --gold:#C8A030; --border:#C0A060; --parchment-lbl:#F2E6C8;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; padding:28px 18px 60px;
+    background:#3D2B1F;
+    font-family:'Crimson Text',Georgia,serif; color:var(--ink);
+  }
+  h1{font-family:'Cinzel',serif; color:var(--parchment); font-size:24px; text-align:center; margin:0 0 6px;}
+  .sub{color:#C9B896; text-align:center; margin:0 auto 30px; max-width:640px; font-size:17px; line-height:1.5;}
+  .board{max-width:960px; margin:0 auto; display:flex; flex-wrap:wrap; gap:20px; justify-content:center;}
+  .card{
+    background:var(--parchment); border:1.5px solid var(--border); border-radius:16px;
+    padding:18px 20px 22px; width:290px;
+    box-shadow:0 8px 26px rgba(0,0,0,0.35);
+  }
+  .card h2{font-family:'Cinzel',serif; font-size:16px; color:var(--ink); margin:0 0 4px; letter-spacing:.5px;}
+  .card p{font-size:15px; color:var(--ink-mid); margin:0 0 16px; line-height:1.45; min-height:44px;}
+  /* mock section header row like the real Act tab */
+  .hdr-row{
+    display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1.5px solid var(--border); padding-bottom:6px;
+  }
+  .hdr-label{font-family:'Cinzel',serif; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; font-size:14px; color:var(--ink-mid);}
+  .badge-cell{position:relative; display:inline-flex; align-items:center; justify-content:center; width:54px; height:54px; margin:-14px 0; flex-shrink:0;}
+  .badge-cell svg{position:absolute; inset:0; margin:auto;}
+  .badge-inner{position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1;}
+  .badge-num{font-family:'Cinzel',serif; font-weight:600; font-size:17px; color:var(--gold);}
+  .badge-lbl{font-family:'Cinzel',serif; font-size:9px; letter-spacing:2px; color:var(--parchment-lbl); text-transform:uppercase; margin-top:1px;}
+  /* comparison strip */
+  .compare{max-width:960px; margin:34px auto 0; background:var(--parchment); border:1.5px solid var(--border); border-radius:16px; padding:20px;}
+  .compare h2{font-family:'Cinzel',serif; font-size:15px; text-transform:uppercase; letter-spacing:1px; color:var(--ink-mid); margin:0 0 16px; text-align:center;}
+  .compare-row{display:flex; gap:26px; justify-content:center; flex-wrap:wrap; align-items:flex-end;}
+  .compare-item{display:flex; flex-direction:column; align-items:center; gap:8px;}
+  .compare-item span{font-family:'Cinzel',serif; font-size:12px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.5px;}
+  .compare-item.ref span{color:var(--red,#9B3030);}
+</style>
+</head>
+<body>
+  <h1>Initiative Badge — Shape Ideas</h1>
+  <p class="sub">Change #19. Same construction as the existing "attacks per round" hex (dark fill, gold stroke, gold number, parchment label) but a distinct silhouette so Initiative reads as its own thing. Each shows <strong>+2 / Init</strong>. Rightmost strip compares all three against the current ATK hex.</p>
+
+  <div class="board">
+
+    <!-- Variant A: Diamond -->
+    <div class="card">
+      <h2>A · Diamond</h2>
+      <p>Rotated square. Cleanest contrast to the hex, feels quick and dynamic — fitting for initiative.</p>
+      <div class="hdr-row">
+        <span class="hdr-label">Player Turn</span>
+        <span class="badge-cell">
+          <svg width="50" height="50" viewBox="0 0 48 48"><polygon points="24,3 45,24 24,45 3,24" fill="#1E1208" stroke="#C8A030" stroke-width="1.6"/></svg>
+          <span class="badge-inner"><span class="badge-num">+2</span><span class="badge-lbl">Init</span></span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Variant B: Shield -->
+    <div class="card">
+      <h2>B · Shield</h2>
+      <p>Heraldic shield. Most "D&amp;D", but its taller silhouette sits a touch heavier than the hex.</p>
+      <div class="hdr-row">
+        <span class="hdr-label">Player Turn</span>
+        <span class="badge-cell">
+          <svg width="46" height="52" viewBox="0 0 44 50"><path d="M22 2 L42 8 V26 C42 38 32 46 22 49 C12 46 2 38 2 26 V8 Z" fill="#1E1208" stroke="#C8A030" stroke-width="1.6"/></svg>
+          <span class="badge-inner"><span class="badge-num">+2</span><span class="badge-lbl">Init</span></span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Variant C: Roundel -->
+    <div class="card">
+      <h2>C · Roundel</h2>
+      <p>Double-ring coin. Softest, reads instantly as a stat token; pairs calmly beside the angular hex.</p>
+      <div class="hdr-row">
+        <span class="hdr-label">Player Turn</span>
+        <span class="badge-cell">
+          <svg width="50" height="50" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="#1E1208" stroke="#C8A030" stroke-width="1.6"/><circle cx="24" cy="24" r="18" fill="none" stroke="#C8A030" stroke-width="0.8" opacity="0.55"/></svg>
+          <span class="badge-inner"><span class="badge-num">+2</span><span class="badge-lbl">Init</span></span>
+        </span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="compare">
+    <h2>Side by side with the current ATK hex</h2>
+    <div class="compare-row">
+      <div class="compare-item ref">
+        <span class="badge-cell" style="width:54px;height:54px;margin:0;">
+          <svg width="52" height="52" viewBox="0 0 48 48"><polygon points="24,4 42,14 42,34 24,44 6,34 6,14" fill="#1E1208" stroke="#C8A030" stroke-width="1.5"/></svg>
+          <span class="badge-inner"><span class="badge-num">3</span><span class="badge-lbl">ATK</span></span>
+        </span>
+        <span>Current (ref)</span>
+      </div>
+      <div class="compare-item">
+        <span class="badge-cell" style="width:54px;height:54px;margin:0;">
+          <svg width="50" height="50" viewBox="0 0 48 48"><polygon points="24,3 45,24 24,45 3,24" fill="#1E1208" stroke="#C8A030" stroke-width="1.6"/></svg>
+          <span class="badge-inner"><span class="badge-num">+2</span><span class="badge-lbl">Init</span></span>
+        </span>
+        <span>A · Diamond</span>
+      </div>
+      <div class="compare-item">
+        <span class="badge-cell" style="width:54px;height:54px;margin:0;">
+          <svg width="46" height="52" viewBox="0 0 44 50"><path d="M22 2 L42 8 V26 C42 38 32 46 22 49 C12 46 2 38 2 26 V8 Z" fill="#1E1208" stroke="#C8A030" stroke-width="1.6"/></svg>
+          <span class="badge-inner"><span class="badge-num">+2</span><span class="badge-lbl">Init</span></span>
+        </span>
+        <span>B · Shield</span>
+      </div>
+      <div class="compare-item">
+        <span class="badge-cell" style="width:54px;height:54px;margin:0;">
+          <svg width="50" height="50" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="#1E1208" stroke="#C8A030" stroke-width="1.6"/><circle cx="24" cy="24" r="18" fill="none" stroke="#C8A030" stroke-width="0.8" opacity="0.55"/></svg>
+          <span class="badge-inner"><span class="badge-num">+2</span><span class="badge-lbl">Init</span></span>
+        </span>
+        <span>C · Roundel</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

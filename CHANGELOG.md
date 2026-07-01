@@ -4,6 +4,25 @@ All notable changes to D&D Player Card are documented here.
 
 ---
 
+## [0.26] — 2026-07-01
+
+### Added
+- **Combat badge cluster on the Act tab** — the always-visible "Player Turn" header now shows three tappable badges: **Initiative** (roundel, auto-calculated from your DEX modifier), **Attacks / round** (spearhead), and **Armor Class** (shield). Tap any badge to open the shared **Combat Stats** sheet
+- **Combat Stats sheet** — edit Initiative, Attacks/round, and AC in one place; each field shows its matching badge to the left and updates live as you type. Leave a field blank to use its auto value, enter a number to override. Fields auto-save when you click out
+- **Opportunity Attack reaction** — seeded automatically into every character (existing and new) with the full 2024 rules text; safe to delete without it coming back
+
+### Changed
+- **Proficiency tooltips** — skill toggles on Explore now read "Proficiency / Expertise" and save toggles on Defend read "Proficiency", each with a gold circle (proficiency) or star (expertise) icon to the left
+- **Filled spell-slot hover** — hovering a used pip now previews the whole run up to that pip, matching empty-pip behavior
+- **Long Rest resets death saves** — taking a Long Rest now clears any recorded death saving throws
+- **Smaller "DC" label** — the "DC" in spell save chips and pinned rows renders a step smaller so the number reads as the emphasis
+
+### Hidden (temporary)
+- **Spell Slots, Long Rest, HP Tracker, and Death Saving Throws** are hidden on the Act tab pending a top-card redesign (flip `HIDE_TOP_TRACKERS` in `renderActTab()` to restore)
+- **"Learn more about this project" links** hidden across all screens for now (remove the CSS rule to restore)
+
+---
+
 ## [0.25] — 2026-06-29
 
 ### Added

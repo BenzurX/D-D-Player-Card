@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cap Style Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    :root {
+      --parchment:     #F2E6C8;
+      --parchment-mid: #E8D8A8;
+      --parchment-drk: #D4C080;
+      --ink:           #2A1D12;
+      --ink-mid:       #5A3E28;
+      --ink-faint:     #8B6840;
+      --tavern-drk:    #1E1208;
+      --tavern-mid:    #2C1E10;
+      --gold:          #C8A030;
+      --gold-light:    #E8D5A0;
+      --border:        #C0A060;
+      --red:           #9B3030;
+      --purple:        #5040A0;
+      --amber:         #806020;
+      --text-xs: 14px;
+      --text-sm: 16px;
+      --text-md: 20px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Crimson Text', serif;
+      background: var(--tavern-mid);
+      color: var(--ink);
+      padding: 24px 20px 48px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .page-title {
+      font-family: 'Cinzel', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--gold-light);
+      text-align: center;
+      margin-bottom: 6px;
+      letter-spacing: 0.06em;
+    }
+    .page-subtitle {
+      font-family: 'Crimson Text', serif;
+      font-size: 15px;
+      color: var(--ink-faint);
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .card {
+      background: var(--parchment);
+      border-radius: 12px;
+      padding: 18px 16px 20px;
+      margin-bottom: 20px;
+    }
+
+    .card-label {
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ink-faint);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 3px;
+    }
+    .card-desc {
+      font-size: 15px;
+      color: var(--ink-mid);
+      margin-bottom: 14px;
+      line-height: 1.4;
+    }
+
+    /* ── PINNED ROW ─────────────────────────────────────────── */
+    .pinned-row {
+      display: flex;
+      align-items: stretch;
+      background: var(--parchment);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      height: 50px;
+      overflow: visible;
+    }
+    .pinned-row-left {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      min-width: 0;
+    }
+    .pinned-icon { font-size: 24px; flex-shrink: 0; }
+    .c-red    { color: var(--red); }
+    .c-purple { color: var(--purple); }
+    .c-amber  { color: var(--amber); }
+
+    .pinned-name-group { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+    .pinned-name {
+      font-family: 'Cinzel', serif;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--ink);
+    }
+    .pinned-subtype {
+      font-family: 'Crimson Text', serif;
+      font-size: var(--text-sm);
+      color: var(--amber);
+      line-height: 1.1;
+      margin-top: -3px;
+    }
+    .pinned-tohit { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+    .pinned-tohit-num {
+      font-family: 'Cinzel', serif;
+      font-size: var(--text-md);
+      font-weight: 600;
+      line-height: 1.1;
+      color: var(--ink);
+    }
+    .pinned-tohit-lbl {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-mid);
+      white-space: nowrap;
+    }
+
+    /* ── CAP BASE ────────────────────────────────────────────── */
+    .pinned-row-cap {
+      flex: 0 0 96px;
+      margin-left: -4px;
+      margin-right: -2px;
+      margin-top: -5px;
+      margin-bottom: -5px;
+      position: relative;
+      z-index: 1;
+      clip-path: path('M 38 60 L 0 0 L 88 0 A 8 8 0 0 1 96 8 L 96 52 A 8 8 0 0 1 88 60 Z');
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 10px 8px 26px;
+    }
+    .pinned-cap-num {
+      font-family: 'Cinzel', serif;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      line-height: 1.1;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .pinned-cap-lbl {
+      font-family: 'Crimson Text', serif;
+      font-size: var(--text-xs);
+      text-align: center;
+      text-transform: capitalize;
+      white-space: nowrap;
+    }
+
+    /* ── STYLE 1: WARM GRADIENT ─────────────────────────────── */
+    .cap-gradient {
+      background: linear-gradient(to right, var(--parchment-mid) 0%, #C8A030 100%);
+    }
+    .cap-gradient .pinned-cap-num { color: var(--ink); }
+    .cap-gradient .pinned-cap-lbl { color: var(--ink-mid); }
+
+    /* ── STYLE 2: DARK INK BADGE ────────────────────────────── */
+    .cap-dark {
+      background: var(--tavern-drk);
+    }
+    .cap-dark .pinned-cap-num { color: var(--gold-light); }
+    .cap-dark .pinned-cap-lbl { color: var(--gold); }
+
+    /* ── STYLE 3: CATEGORY COLOR — ATTACK/CRIMSON ────────────── */
+    .cap-crimson {
+      background: #3D1010;
+    }
+    .cap-crimson .pinned-cap-num { color: #F5D0D0; }
+    .cap-crimson .pinned-cap-lbl { color: #D49090; }
+
+    /* ── CURRENT (reference) ────────────────────────────────── */
+    .cap-current {
+      background: var(--parchment-drk);
+    }
+    .cap-current .pinned-cap-num { color: var(--ink); }
+    .cap-current .pinned-cap-lbl { color: var(--ink-mid); }
+
+    /* ── DIVIDER ─────────────────────────────────────────────── */
+    .divider {
+      border: none;
+      border-top: 1px solid rgba(192,160,96,0.3);
+      margin: 28px 0 24px;
+    }
+
+    .section-title {
+      font-family: 'Cinzel', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--gold-light);
+      text-align: center;
+      margin-bottom: 6px;
+      letter-spacing: 0.06em;
+    }
+    .section-sub {
+      font-family: 'Crimson Text', serif;
+      font-size: 15px;
+      color: var(--ink-faint);
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    /* ── TEXTURE SWATCHES ───────────────────────────────────── */
+    .texture-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .swatch {
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      height: 80px;
+      background-color: var(--parchment);
+      background-size: 256px 256px;
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      padding: 7px 8px;
+    }
+    .swatch-lbl {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--ink-mid);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .texture-hint {
+      font-size: 14px;
+      color: var(--ink-faint);
+      text-align: center;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-title">Cap Style Comparison</div>
+  <div class="page-subtitle">Three options vs. current flat fill</div>
+
+  <!-- REFERENCE: CURRENT -->
+  <div class="card">
+    <div class="card-label">Current (reference)</div>
+    <div class="card-desc">Flat <code>parchment-drk</code> fill. Functional but low contrast.</div>
+    <div class="pinned-row">
+      <div class="pinned-row-left">
+        <i class="ti ti-sword pinned-icon c-red"></i>
+        <div class="pinned-name-group">
+          <span class="pinned-name">Longsword</span>
+          <span class="pinned-subtype">Attack · Slashing</span>
+        </div>
+        <div class="pinned-tohit">
+          <span class="pinned-tohit-num">+5</span>
+          <span class="pinned-tohit-lbl">To Hit</span>
+        </div>
+      </div>
+      <div class="pinned-row-cap cap-current">
+        <span class="pinned-cap-num">1d8+3</span>
+        <span class="pinned-cap-lbl">Slashing</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPTION 1: WARM GRADIENT -->
+  <div class="card">
+    <div class="card-label">Option 1 — Warm Gradient</div>
+    <div class="card-desc">Parchment fades into deep amber gold. Depth without drama — still feels like the same card stock.</div>
+    <div class="pinned-row">
+      <div class="pinned-row-left">
+        <i class="ti ti-sword pinned-icon c-red"></i>
+        <div class="pinned-name-group">
+          <span class="pinned-name">Longsword</span>
+          <span class="pinned-subtype">Attack · Slashing</span>
+        </div>
+        <div class="pinned-tohit">
+          <span class="pinned-tohit-num">+5</span>
+          <span class="pinned-tohit-lbl">To Hit</span>
+        </div>
+      </div>
+      <div class="pinned-row-cap cap-gradient">
+        <span class="pinned-cap-num">1d8+3</span>
+        <span class="pinned-cap-lbl">Slashing</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPTION 2: DARK INK BADGE -->
+  <div class="card">
+    <div class="card-label">Option 2 — Dark Ink Badge</div>
+    <div class="card-desc">Tavern-dark cap, gold stat numbers. High contrast — the damage value jumps off the row.</div>
+    <div class="pinned-row">
+      <div class="pinned-row-left">
+        <i class="ti ti-sparkles pinned-icon c-purple"></i>
+        <div class="pinned-name-group">
+          <span class="pinned-name">Fireball</span>
+          <span class="pinned-subtype">Magic · 3rd Level</span>
+        </div>
+        <div class="pinned-tohit">
+          <span class="pinned-tohit-num">DC 16</span>
+          <span class="pinned-tohit-lbl">DEX Save</span>
+        </div>
+      </div>
+      <div class="pinned-row-cap cap-dark">
+        <span class="pinned-cap-num">8d6</span>
+        <span class="pinned-cap-lbl">Fire</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPTION 3: CATEGORY COLOR -->
+  <div class="card">
+    <div class="card-label">Option 3 — Category Color (Attack = Crimson)</div>
+    <div class="card-desc">Cap color encodes ability type. Magic = purple, Items = amber, Features = sage — you'd know the type before reading the name.</div>
+    <div class="pinned-row">
+      <div class="pinned-row-left">
+        <i class="ti ti-bow pinned-icon c-red"></i>
+        <div class="pinned-name-group">
+          <span class="pinned-name">Shortbow</span>
+          <span class="pinned-subtype">Attack · Piercing</span>
+        </div>
+        <div class="pinned-tohit">
+          <span class="pinned-tohit-num">+4</span>
+          <span class="pinned-tohit-lbl">To Hit</span>
+        </div>
+      </div>
+      <div class="pinned-row-cap cap-crimson">
+        <span class="pinned-cap-num">1d6+2</span>
+        <span class="pinned-cap-lbl">Piercing</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- PARCHMENT TEXTURE -->
+  <div class="section-title">Parchment Texture</div>
+  <div class="section-sub">SVG noise — seed randomizes on every load. Three grain scales shown.</div>
+
+  <div class="texture-row">
+    <div class="swatch" id="sw-fine">   <span class="swatch-lbl">Fine</span></div>
+    <div class="swatch" id="sw-medium"> <span class="swatch-lbl">Medium</span></div>
+    <div class="swatch" id="sw-grunge"> <span class="swatch-lbl">Grunge</span></div>
+  </div>
+  <div class="texture-hint">Reload the page — each grain pattern is unique.</div>
+
+  <script>
+    function noiseUrl(seed, freq, octaves, opacity) {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256">
+        <filter id="n">
+          <feTurbulence type="fractalNoise" baseFrequency="${freq}" numOctaves="${octaves}" seed="${seed}" stitchTiles="stitch"/>
+          <feColorMatrix type="saturate" values="0"/>
+        </filter>
+        <rect width="256" height="256" filter="url(#n)" opacity="${opacity}"/>
+      </svg>`;
+      return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+    }
+
+    const seed = Math.floor(Math.random() * 9999);
+    document.getElementById('sw-fine').style.backgroundImage   = noiseUrl(seed, '0.80', 4, 0.13);
+    document.getElementById('sw-medium').style.backgroundImage = noiseUrl(seed, '0.45', 3, 0.16);
+    document.getElementById('sw-grunge').style.backgroundImage = noiseUrl(seed, '0.22', 2, 0.20);
+  </script>
+
+</body>
+</html>

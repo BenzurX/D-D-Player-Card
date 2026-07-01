@@ -409,6 +409,29 @@ function blankAbilities() {
   };
 }
 
+// Default reaction seeded into every character (existing + new).
+const OPPORTUNITY_ATTACK = {
+  id: 'reaction_opportunity_attack',
+  name: 'Opportunity Attack',
+  badge: 'reaction',
+  desc: "When a creature you can see leaves your reach using its action, its Bonus Action, its Reaction, or one of its Speeds, you can make an Opportunity Attack: use your Reaction to make one melee attack with a weapon or an Unarmed Strike against that creature. The attack occurs right before the creature leaves your reach. You can avoid provoking Opportunity Attacks by taking the Disengage action.",
+  pinned: false,
+};
+
+// Seeds the default Opportunity Attack reaction into a character exactly once.
+// A per-character flag prevents it from being re-added if the user deletes it.
+// Returns true if the character was modified.
+function ensureDefaultReactions(c) {
+  if (!c || c.seededOpportunityAttack) return false;
+  if (!c.abilities) c.abilities = blankAbilities();
+  if (!c.abilities.reaction) c.abilities.reaction = [];
+  if (!c.abilities.reaction.some(r => r.id === OPPORTUNITY_ATTACK.id)) {
+    c.abilities.reaction.push({ ...OPPORTUNITY_ATTACK });
+  }
+  c.seededOpportunityAttack = true;
+  return true;
+}
+
 // ── CATEGORY CONFIG ───────────────────────────────────────────
 // Used by openCategorySheet, openAddSheet, and openEditSheet
 const CATEGORIES = {
@@ -647,6 +670,25 @@ function normalizeBonus(val) {
   if (!s || s.startsWith('+') || s.startsWith('-')) return s;
   const n = Number(s);
   return isNaN(n) ? s : (n >= 0 ? '+' : '') + n;
+}
+
+// Escapes a value and wraps any standalone "DC" label in a span so it can be
+// rendered smaller than the number beside it (spell save chips + pinned caps).
+function dcify(val) {
+  return esc(val).replace(/\bDC\b/g, '<span class="stat-dc">DC</span>');
+}
+
+// Builds a combat badge (Initiative roundel / Attacks spearhead / AC shield).
+// Shared by the Act-tab cluster and the Combat Stats sheet so they stay identical.
+function combatBadge(kind, num, label, opts = {}) {
+  const shapes = {
+    init: '<svg width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="#1E1810" stroke="#C9A84C" stroke-width="1.6"/><circle cx="24" cy="24" r="18" fill="none" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/></svg>',
+    atk:  '<svg width="46" height="48" viewBox="0 0 46 48"><polygon points="23,2 44,17 36,46 10,46 2,17" fill="#1E1810" stroke="#C9A84C" stroke-width="1.6"/></svg>',
+    ac:   '<svg width="40" height="46" viewBox="0 0 44 50"><path d="M22 2 L42 8 V26 C42 38 32 46 22 49 C12 46 2 38 2 26 V8 Z" fill="#1E1810" stroke="#C9A84C" stroke-width="1.7"/></svg>',
+  };
+  const tip = opts.tooltip ? ` data-tooltip="${esc(opts.tooltip)}"` : '';
+  const id  = opts.id ? ` id="${opts.id}"` : '';
+  return `<span class="combat-badge"${id}${tip}>${shapes[kind] || ''}<span class="combat-badge-inner"><span class="combat-badge-num">${num}</span><span class="combat-badge-lbl">${label}</span></span></span>`;
 }
 
 // Returns the total skill bonus for a character, accounting for overrides,
@@ -890,6 +932,7 @@ function openNewCharSheet(fromWelcome) {
       deathSaves: { successes: [false, false, false], failures: [false, false, false] },
     });
     currentCharId = id;
+    ensureDefaultReactions(characters[characters.length - 1]);
     save();
 
     closeOverlay('newCharOverlay');
@@ -983,7 +1026,7 @@ function renderAbilityCard(a, key) {
       a.spellLevel    ? `<span class="ability-chip ability-chip-purple">${esc(a.spellLevel)}</span>` : '',
       a.school        ? `<span class="ability-chip ability-chip-school">${esc(a.school)}</span>` : '',
       a.castingTime   ? `<span class="ability-chip">${esc(a.castingTime)}</span>` : '',
-      a.saveOrAttack  ? `<span class="ability-chip">${esc(a.saveOrAttack.replace(/\bSpell Attack\b/gi, 'ATK'))}</span>` : '',
+      a.saveOrAttack  ? `<span class="ability-chip">${dcify(a.saveOrAttack.replace(/\bSpell Attack\b/gi, 'ATK'))}</span>` : '',
       a.damage        ? `<span class="ability-chip">${esc(a.damage)}</span>` : '',
       a.range         ? `<span class="ability-chip">${esc(a.range)}</span>` : '',
       a.duration      ? `<span class="ability-chip">${esc(a.duration)}</span>` : '',
@@ -1207,7 +1250,7 @@ function renderActTab() {
           ${combinedSubtype ? `<span class="pinned-subtype">${esc(combinedSubtype)}</span>` : ''}
         </div>
         ${statNum ? `<div class="pinned-tohit">
-          <span class="pinned-tohit-num">${esc(statNum)}</span>
+          <span class="pinned-tohit-num">${dcify(statNum)}</span>
           ${statLbl ? `<span class="pinned-tohit-lbl">${statLbl}</span>` : ''}
         </div>` : ''}
       </div>
@@ -1310,7 +1353,29 @@ function renderActTab() {
       </div>
     </div>` : '';
 
-  const showActiveTurnBlock = hasActiveTurn || hpMax > 0;
+  // Spell Slots, Long Rest, HP Tracker, and Death Saving Throws are temporarily
+  // hidden on the Act tab pending a top-card redesign. Set to false to restore.
+  const HIDE_TOP_TRACKERS = true;
+
+  // Combat badge cluster (Initiative · Attacks · Armor Class) shown in the
+  // always-visible Player Turn header. Initiative auto-calcs from DEX; AC and
+  // attacks fall back to sensible defaults. All three are editable via the
+  // shared Combat Stats sheet (tap any badge).
+  const dexMod  = getAbilityMod((c && c.dex) || 10);
+  const initVal = (c && c.initiativeOverride != null) ? c.initiativeOverride : dexMod;
+  const initStr = (initVal >= 0 ? '+' : '') + initVal;
+  const acVal   = c ? ((c.ac != null && c.ac !== '') ? c.ac : 10 + dexMod) : '—';
+  const combatCluster = c ? `<span class="combat-cluster" id="combatCluster">
+      ${combatBadge('init', initStr, 'Init', { tooltip: 'Initiative' })}
+      ${combatBadge('atk', attacks, 'ATK', { tooltip: `${attacks} ${attacks === 1 ? 'Attack' : 'Attacks'}/round` })}
+      ${combatBadge('ac', acVal, 'AC', { tooltip: 'Armor Class' })}
+    </span>` : '';
+  const playerTurnHTML = c ? `
+      <div class="section-hdr section-hdr-row section-hdr-turn"><span>Player Turn</span>${combatCluster}</div>
+      <div class="pinned-list" id="standard-turn-list">${standardTurn.map(r => pinnedRowHTML(r, true)).join('')}</div>` : '';
+
+  // The Player Turn header (with the combat cluster) is always shown for a character.
+  const showActiveTurnBlock = !!c;
   const hpHTML = hpMax > 0 ? `
     <div class="section-hdr${hasActiveTurn ? ' section-gap' : ''}"> Hit Point Tracker</div>
     <div class="hp-track-outer">
@@ -1325,13 +1390,11 @@ function renderActTab() {
 
   const activeTurnHTML = showActiveTurnBlock ? `
     <div class="active-turn-block">
-      ${standardTurn.length ? `
-        <div class="section-hdr section-hdr-row section-hdr-turn"><span>Player Turn</span><span class="attacks-hex" data-tooltip="${attacks} ${attacks === 1 ? 'Attack' : 'Attacks'}/round"><svg width="52" height="52" viewBox="0 0 48 48"><polygon points="24,4 42,14 42,34 24,44 6,34 6,14" fill="#1E1810" stroke="#C9A84C" stroke-width="1.5"/></svg><span class="attacks-hex-inner"><span class="attacks-hex-num">${attacks}</span><span class="attacks-hex-atk">ATK</span></span></span></div>
-        <div class="pinned-list" id="standard-turn-list">${standardTurn.map(r => pinnedRowHTML(r, true)).join('')}</div>` : ''}
+      ${playerTurnHTML}
       ${spellStatsHTML}
-      ${slotsHTML}
-      ${hpHTML}
-      ${deathSavesHTML}
+      ${HIDE_TOP_TRACKERS ? '' : slotsHTML}
+      ${HIDE_TOP_TRACKERS ? '' : hpHTML}
+      ${HIDE_TOP_TRACKERS ? '' : deathSavesHTML}
     </div>` : '';
 
   tab.innerHTML = `
@@ -1450,6 +1513,9 @@ function renderActTab() {
     });
   }
 
+  const combatClusterEl = tab.querySelector('#combatCluster');
+  if (combatClusterEl) combatClusterEl.addEventListener('click', () => openCombatStatsSheet());
+
   tab.querySelectorAll('.act-btn:not(.extra-act)').forEach(btn => {
     btn.addEventListener('click', () => openAddSheet(btn.dataset.category + '_action', btn.dataset.category));
   });
@@ -1565,11 +1631,11 @@ function renderActTab() {
       renderActTab();
     });
     pip.addEventListener('mouseenter', () => {
-      if (pip.classList.contains('filled')) return;
+      // Highlight every pip up to and including the hovered one, whether
+      // filled or not, so hovering a filled pip lights the whole run.
       const index = parseInt(pip.dataset.index);
       pip.closest('.slot-pips').querySelectorAll('.slot-pip').forEach(p => {
-        if (!p.classList.contains('filled') && parseInt(p.dataset.index) <= index)
-          p.classList.add('pip-preview');
+        if (parseInt(p.dataset.index) <= index) p.classList.add('pip-preview');
       });
     });
     pip.addEventListener('mouseleave', () => {
@@ -1583,6 +1649,7 @@ function renderActTab() {
       if (!c.spellSlots) c.spellSlots = blankSpellSlots();
       Object.values(c.spellSlots).forEach(s => { s.used = 0; });
       c.currentHp = parseInt(c.hp) || 0;
+      c.deathSaves = { successes: [false, false, false], failures: [false, false, false] };
       save();
       renderActTab();
     });
@@ -1654,7 +1721,7 @@ function renderExploreTab() {
                    : '';
     return `
       <div class="skill-row" data-skill="${skill.key}">
-        <button class="prof-toggle ${state}" data-skill="${skill.key}" aria-label="Toggle ${skill.name} proficiency">
+        <button class="prof-toggle ${state}" data-skill="${skill.key}" data-tooltip="Proficiency / Expertise" aria-label="Toggle ${skill.name} proficiency">
           <i class="ti ${profIcon(state)}"></i>
         </button>
         <div class="skill-info">
@@ -1799,7 +1866,7 @@ function renderDefenseTab() {
                   : '';
     return `
       <div class="skill-row save-row" data-ability="${ab}">
-        <button class="prof-toggle${isProf ? ' prof' : ''}" data-save="${ab}" aria-label="Toggle ${ABILITY_NAMES[ab]} save proficiency">
+        <button class="prof-toggle${isProf ? ' prof' : ''}" data-save="${ab}" data-tooltip="Proficiency" aria-label="Toggle ${ABILITY_NAMES[ab]} save proficiency">
           <i class="ti ${isProf ? 'ti-circle-filled' : 'ti-circle'}"></i>
         </button>
         <div class="skill-info">
@@ -2193,6 +2260,92 @@ function openSpellStatsSheet() {
   openOverlay('overlay');
 }
 
+// ── OPEN COMBAT STATS SHEET (Initiative · Attacks · AC) ──────
+function openCombatStatsSheet() {
+  resetSheetPin();
+  const c = currentChar();
+  if (!c) return;
+  const dexMod   = getAbilityMod(c.dex || 10);
+  const autoInit = (dexMod >= 0 ? '+' : '') + dexMod;
+  const autoAc   = 10 + dexMod;
+  const initDisp = c.initiativeOverride != null ? ((c.initiativeOverride >= 0 ? '+' : '') + c.initiativeOverride) : autoInit;
+  const atkDisp  = c.attacksPerRound || 1;
+  const acDisp   = (c.ac != null && c.ac !== '') ? c.ac : autoAc;
+
+  document.getElementById('sheetTitle').innerHTML = `<i class="ti ti-swords c-red"></i> Combat Stats`;
+  document.getElementById('sheetBody').innerHTML = `
+    <div class="edit-form">
+      <div class="tab-hint" style="margin-bottom:4px;">Leave a field blank to use its auto value. Enter a number to override.</div>
+      <div class="form-row">
+        <label class="form-label">Initiative</label>
+        <div class="cs-field">
+          ${combatBadge('init', initDisp, 'Init', { id: 'cs-init-badge' })}
+          <input class="form-input" id="cs-init" type="number" value="${c.initiativeOverride != null ? c.initiativeOverride : ''}" placeholder="Auto (${autoInit})">
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Attacks / Round</label>
+        <div class="cs-field">
+          ${combatBadge('atk', atkDisp, 'ATK', { id: 'cs-atk-badge' })}
+          <input class="form-input" id="cs-atk" type="number" min="1" value="${c.attacksPerRound || 1}" placeholder="Auto (1)">
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Armor Class</label>
+        <div class="cs-field">
+          ${combatBadge('ac', acDisp, 'AC', { id: 'cs-ac-badge' })}
+          <input class="form-input" id="cs-ac" type="number" value="${c.ac != null && c.ac !== '' ? c.ac : ''}" placeholder="Auto (${autoAc})">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" id="cs-cancel">Cancel</button>
+        <button class="btn-save" id="cs-save">Save</button>
+      </div>
+    </div>`;
+
+  // Live-update each badge as its field changes
+  const setBadgeNum = (badgeId, text) => {
+    const el = document.querySelector(`#${badgeId} .combat-badge-num`);
+    if (el) el.textContent = text;
+  };
+  document.getElementById('cs-init').addEventListener('input', e => {
+    const n = parseInt(e.target.value.trim());
+    setBadgeNum('cs-init-badge', e.target.value.trim() === '' || isNaN(n) ? autoInit : ((n >= 0 ? '+' : '') + n));
+  });
+  document.getElementById('cs-atk').addEventListener('input', e => {
+    const n = parseInt(e.target.value.trim());
+    setBadgeNum('cs-atk-badge', e.target.value.trim() === '' || isNaN(n) ? 1 : Math.max(1, n));
+  });
+  document.getElementById('cs-ac').addEventListener('input', e => {
+    const n = parseInt(e.target.value.trim());
+    setBadgeNum('cs-ac-badge', e.target.value.trim() === '' || isNaN(n) ? autoAc : n);
+  });
+
+  // Commit field values to the character (no overlay close). Used on blur + Save.
+  const commit = () => {
+    const rawInit = document.getElementById('cs-init').value.trim();
+    const rawAtk  = document.getElementById('cs-atk').value.trim();
+    const rawAc   = document.getElementById('cs-ac').value.trim();
+    c.initiativeOverride = rawInit === '' ? null : parseInt(rawInit);
+    c.attacksPerRound    = rawAtk  === '' ? 1 : Math.max(1, parseInt(rawAtk) || 1);
+    c.ac                 = rawAc   === '' ? autoAc : parseInt(rawAc);
+    save();
+    renderActTab();
+  };
+
+  // Auto-save when the user clicks out of any field.
+  ['cs-init', 'cs-atk', 'cs-ac'].forEach(id => {
+    document.getElementById(id).addEventListener('blur', commit);
+  });
+
+  document.getElementById('cs-cancel').addEventListener('click', () => closeOverlay('overlay'));
+  document.getElementById('cs-save').addEventListener('click', () => {
+    commit();
+    closeOverlay('overlay');
+  });
+  openOverlay('overlay');
+}
+
 // ── OPEN SKILL OVERRIDE SHEET ────────────────────────────────
 function openSkillOverrideSheet(skillKey) {
   const skill = SKILLS.find(s => s.key === skillKey);
@@ -2413,10 +2566,10 @@ function openAbilityDetailSheet(ability, key) {
     `<i class="ti ${cfg.icon} ${cfg.color}"></i> ${esc(ability.name)}`;
   document.getElementById('sheetBody').innerHTML = `
     <div class="spell-detail">
-      <div class="spell-detail-badge">
+      ${category !== 'reaction' ? `<div class="spell-detail-badge">
         <span class="ability-badge badge-${ability.badge}">${esc(badgeLabels[ability.badge] || ability.badge || '')}</span>
         ${flagChips}
-      </div>
+      </div>` : ''}
       ${fieldsHTML ? `<div class="detail-fields">${fieldsHTML}</div>` : ''}
       ${ability.desc
         ? `<div class="spell-detail-desc">${tagCheckBonuses(esc(ability.desc), currentChar())}</div>`
@@ -2728,7 +2881,11 @@ function attachFormListeners(ability, key) {
     }
   } else if (category === 'items') {
     wireSearch('item-suggestions', fetchItemSuggestions,
-      i => (i.rarity ? i.rarity : (i.category && typeof i.category === 'object' ? i.category.name : i.category)) || '',
+      i => {
+        const rarity   = i.rarity   && typeof i.rarity   === 'object' ? i.rarity.name   : i.rarity;
+        const category = i.category && typeof i.category === 'object' ? i.category.name : i.category;
+        return rarity || category || '';
+      },
       fillItemForm);
   } else if (category === 'features') {
     wireSearch('feat-suggestions', fetchFeatSuggestions,
@@ -3452,6 +3609,7 @@ function openImportSheet() {
     const result = validateImportedChar(data);
     if (!result.valid) { errorEl.textContent = result.error; return; }
     characters.push(result.char);
+    ensureDefaultReactions(characters[characters.length - 1]);
     save();
     closeOverlay('importCharOverlay');
     openOverlay('charOverlay');
@@ -3578,6 +3736,9 @@ if (characters.length === 0) {
   if (!currentCharId || !characters.find(c => c.id === currentCharId)) {
     currentCharId = characters[0].id;
   }
+  let seededAny = false;
+  characters.forEach(c => { if (ensureDefaultReactions(c)) seededAny = true; });
+  if (seededAny) save();
   hideWelcome();
   renderHeader();
   renderAllSimpleTabs();
@@ -3601,6 +3762,9 @@ setTimeout(hideLoading, 1200);
       const cls    = isAdv ? 'adv-badge-adv' : 'adv-badge-disadv';
       const letter = isAdv ? 'A' : 'D';
       return `${match} <span class="adv-badge ${cls}">${letter}</span>`;
+    }).replace(/\b(Proficiency|Expertise)\b/g, match => {
+      const icon = match === 'Expertise' ? 'ti-star-filled' : 'ti-circle-filled';
+      return `<i class="ti ${icon} tip-prof-icon"></i>${match}`;
     });
   }
 
